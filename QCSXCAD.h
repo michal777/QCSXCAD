@@ -116,6 +116,9 @@ public slots:
 
 	static void aboutQCSXCAD(QWidget* parent=0);
 
+    //run wizard slot
+    void RunWizard();
+
 protected slots:
 	void Edit();
 	void Copy();
@@ -175,6 +178,10 @@ protected:
 	virtual void keyPressEvent(QKeyEvent * event);
 
 	QHash<QString,QString> m_BC; //!< boundary conditions
+    
+    //wizard is friend to access dialogs like add box, add cube, add metal etc
+    friend class PageGeometry;
+
 };
 
 #endif //_QCSXCAD_H_

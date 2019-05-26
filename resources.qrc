@@ -45,5 +45,6 @@
     <file>images/ArrowsXZ.png</file>
     <file>images/ArrowsYZ.png</file>
     <file>images/opening.png</file>
+    <file>images/wizard.png</file>
   </qresource>
 </RCC>

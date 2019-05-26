@@ -147,6 +147,13 @@ set( SOURCES
   export_pov.cpp
   QCSXCAD_Global.cpp
   vtkInteractorStyleRubberBand2DPlane.cpp
+  ./wizard/WizardInit.cpp
+  ./wizard/PageBasicSimSetup.cpp
+  ./wizard/PageGeneralGeometrySettings.cpp
+  ./wizard/PageGeometry.cpp
+  ./wizard/PagePorts.cpp
+  ./wizard/PageResultsSparam.cpp
+  ./wizard/PageStart.cpp
 )
 
 set(PUB_HEADERS
@@ -162,6 +169,13 @@ set(PUB_HEADERS
   export_x3d.h
   export_pov.h
   vtkInteractorStyleRubberBand2DPlane.h
+  ./wizard/WizardInit.h
+  ./wizard/PageBasicSimSetup.h
+  ./wizard/PageGeneralGeometrySettings.h
+  ./wizard/PageGeometry.h
+  ./wizard/PagePorts.h
+  ./wizard/PageResultsSparam.h
+  ./wizard/PageStart.h
 )
 
 # CSXCAD library

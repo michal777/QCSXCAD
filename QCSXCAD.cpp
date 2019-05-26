@@ -69,6 +69,9 @@
 #include "export_x3d.h"
 #include "export_pov.h"
 
+//wizard
+#include "./wizard/WizardInit.h"
+
 QCSXCAD::QCSXCAD(QWidget *parent) : QMainWindow(parent)
 {
 	QStringList argList=qApp->arguments();
@@ -687,6 +690,14 @@ void QCSXCAD::New()
 	}
 }
 
+//start wizard
+void QCSXCAD::RunWizard()
+{
+    WizardInit *wizard = new WizardInit(this);
+    wizard->show();
+}
+
+
 //void QCSXCAD::Load()
 //{
 //	if (bModified)
@@ -860,6 +871,9 @@ void QCSXCAD::BuildToolBar()
 	mainTB->setObjectName("General_ToolBar");
 	QSize TBIconSize(16,16);
 	mainTB->setIconSize(TBIconSize);
+
+    //run wizard button
+	mainTB->addAction(QIcon(":/images/wizard.png"),tr("Run Wizard"),this,SLOT(RunWizard()));
 
 	if (QCSX_Settings.GetEdit())
 		mainTB->addAction(QIcon(":/images/filenew.png"),tr("New"),this,SLOT(New()));
