@@ -109,6 +109,8 @@ if(${VTK_VERSION} VERSION_GREATER "6" AND VTK_QT_VERSION VERSION_GREATER "4")
     include_directories(${Qt5Widgets_INCLUDE_DIRS})
     find_package(Qt5Xml REQUIRED)
     include_directories(${Qt5Xml_INCLUDE_DIRS})
+    find_package(Qt5Script REQUIRED)
+    include_directories(${Qt5Script_INCLUDE_DIRS})
     INCLUDE_DIRECTORIES(${Qt5_INCLUDE_DIRS})
     set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
     QT5_ADD_RESOURCES(RESOURCES_SRCS ${RESOURCES})
@@ -150,10 +152,12 @@ set( SOURCES
   ./wizard/WizardInit.cpp
   ./wizard/PageBasicSimSetup.cpp
   ./wizard/PageGeneralGeometrySettings.cpp
+  ./wizard/PageMaterials.cpp
   ./wizard/PageGeometry.cpp
   ./wizard/PagePorts.cpp
   ./wizard/PageResultsSparam.cpp
   ./wizard/PageStart.cpp
+  ./wizard/VariablesEditor.cpp
 )
 
 set(PUB_HEADERS
@@ -172,10 +176,12 @@ set(PUB_HEADERS
   ./wizard/WizardInit.h
   ./wizard/PageBasicSimSetup.h
   ./wizard/PageGeneralGeometrySettings.h
+  ./wizard/PageMaterials.h
   ./wizard/PageGeometry.h
   ./wizard/PagePorts.h
   ./wizard/PageResultsSparam.h
   ./wizard/PageStart.h
+  ./wizard/VariablesEditor.h
 )
 
 # CSXCAD library
@@ -186,7 +192,7 @@ add_library( QCSXCAD SHARED
 )
 
 if(Qt5Widgets_FOUND)
-    qt5_use_modules(QCSXCAD Widgets Xml)
+    qt5_use_modules(QCSXCAD Widgets Xml Script)
 endif()
 
 TARGET_LINK_LIBRARIES( QCSXCAD

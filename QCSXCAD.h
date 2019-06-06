@@ -181,6 +181,7 @@ protected:
     
     //wizard is friend to access dialogs like add box, add cube, add metal etc
     friend class PageGeometry;
+    friend class PageMaterials;
 
 };
 
