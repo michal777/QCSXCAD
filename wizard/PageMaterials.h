@@ -4,13 +4,17 @@
 #include <QWizard>
 #include <QLineEdit>
 #include <QLabel>
+#include <QString>
 #include <QComboBox>
 #include <QGridLayout>
+#include <QPushButton>
 #include <QGroupBox>
 #include <QListWidget>
 #include <QVector>
-#include <QString>
-#include <QPushButton>
+#include <QGroupBox>
+#include <QRadioButton>
+#include <QDebug>
+#include <string>
 
 //??
 #include "../QCSXCAD.h"
@@ -22,8 +26,9 @@
 #include "CSPrimitives.h"
 #include "CSPrimBox.h"
 #include "CSPropMetal.h"
+#include "CSPropMaterial.h"
+#include "CSProperties.h"
 #include "ContinuousStructure.h"
-
 
 
 struct material_parameters_struct
@@ -59,10 +64,12 @@ public:
 
     void MaterialsSettings(void);
     void UploadMaterialsToViewer(void);
+    void RemoveMaterialsFromViewer(void);
 
-
+    QRadioButton *rad_but_type_material;
+    QRadioButton *rad_but_type_metal;
     QLineEdit *name;
-    QLineEdit *type;
+    QString type;
     QLineEdit *epsilon;
     QLineEdit *mue;
     QLineEdit *kappa;
@@ -71,9 +78,10 @@ public:
     QLineEdit *thickness;
 
 public slots:
-    void OnAddMaterial(void);
+    void OnAddOrChangeMaterial(void);
+    void OnRemoveMaterial(void);
     void OnGetSelectedMaterial(QListWidgetItem* item);
-
+    void OnSetMaterialType(void);
 };
 
 #endif // PAGEMATERIALS_H

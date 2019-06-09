@@ -39,10 +39,32 @@ void PageMaterials::ReadFromSimScriptBuffer(void)
 
 void PageMaterials::UploadMaterialsToViewer(void)
 {
-    CSPropMetal *new_material = new CSPropMetal(wizardsparent_tmp->clParaSet);
-    wizardsparent_tmp->AddProperty(new_material);
-    wizardsparent_tmp->CSTree->AddPropItem(new_material);
+    if(!QString::compare(type, "material"))
+    {
+        CSPropMaterial *new_material = new CSPropMaterial(wizardsparent_tmp->clParaSet);
+        new_material->SetName(name->text().toStdString());
+        wizardsparent_tmp->AddProperty(new_material);
+        wizardsparent_tmp->CSTree->AddPropItem(new_material);
+    }
+    else if(!QString::compare(type, "metal"))
+    {
+        CSPropMetal *new_metal = new CSPropMetal(wizardsparent_tmp->clParaSet);
+        new_metal->SetName(name->text().toStdString());
+        wizardsparent_tmp->AddProperty(new_metal);
+        wizardsparent_tmp->CSTree->AddPropItem(new_metal);
+    }
+}
 
+void PageMaterials::RemoveMaterialsFromViewer(void)
+{
+    std::string name_tmp = materials_param_list_ptr->at(materials_list_widget->currentRow()).name.toStdString();
+    std::vector<CSProperties*> prop_vec_tmp = wizardsparent_tmp->GetPropertiesByName(name_tmp);
+    CSProperties* prop_tmp = prop_vec_tmp.at(0);
+//qDebug() << QString::fromStdString(xxx->GetName());
+
+    wizardsparent_tmp->CSTree->DeletePropItem(prop_tmp);
+    wizardsparent_tmp->DeleteProperty(prop_tmp);
+    wizardsparent_tmp->setModified();
 }
 
 
@@ -54,13 +76,22 @@ void PageMaterials::MaterialsSettings(void)
     materials_list_widget = new QListWidget(this);
     connect(materials_list_widget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(OnGetSelectedMaterial(QListWidgetItem*)));
 
-    QPushButton *button_add_material = new QPushButton("New", this);
-    connect(button_add_material, SIGNAL(released()), this, SLOT(OnAddMaterial()));
+    QPushButton *button_add_edit_material = new QPushButton("New/Edit", this);
+    connect(button_add_edit_material, SIGNAL(released()), this, SLOT(OnAddOrChangeMaterial()));
+    QPushButton *button_remove_material = new QPushButton("Remove", this);
+    connect(button_remove_material, SIGNAL(released()), this, SLOT(OnRemoveMaterial()));
+
+
+    rad_but_type_material = new QRadioButton("material", this);
+    rad_but_type_metal = new QRadioButton("metal", this);
+    rad_but_type_material->setChecked(true);
+    connect(rad_but_type_material, SIGNAL(clicked()), this, SLOT(OnSetMaterialType()));
+    connect(rad_but_type_metal, SIGNAL(clicked()), this, SLOT(OnSetMaterialType()));
 
     QLabel *statictext_name = new QLabel("name", this);
     name = new QLineEdit(this);
-    QLabel *statictext_type = new QLabel("type", this);
-    type = new QLineEdit(this);
+//    QLabel *statictext_type = new QLabel("type", this);
+//    type = new QLineEdit(this);
     QLabel *statictext_epsilon = new QLabel("epsilon", this);
     epsilon = new QLineEdit(this);
     QLabel *statictext_mue = new QLabel("mue", this);
@@ -75,8 +106,8 @@ void PageMaterials::MaterialsSettings(void)
     thickness = new QLineEdit(this);
 
 
-    grid_material->addWidget(statictext_name, 0, 0, Qt::AlignRight);
-    grid_material->addWidget(statictext_type, 1, 0, Qt::AlignRight);
+    grid_material->addWidget(rad_but_type_material, 0, 0, Qt::AlignRight);
+    grid_material->addWidget(statictext_name, 1, 0, Qt::AlignRight);
     grid_material->addWidget(statictext_epsilon, 2, 0, Qt::AlignRight);
     grid_material->addWidget(statictext_mue, 3, 0, Qt::AlignRight);
     grid_material->addWidget(statictext_kappa, 4, 0, Qt::AlignRight);
@@ -84,8 +115,8 @@ void PageMaterials::MaterialsSettings(void)
     grid_material->addWidget(statictext_conductivity, 6, 0, Qt::AlignRight);
     grid_material->addWidget(statictext_thickness, 7, 0, Qt::AlignRight);
 
-    grid_material->addWidget(name, 0, 1, Qt::AlignRight);
-    grid_material->addWidget(type, 1, 1, Qt::AlignRight);
+    grid_material->addWidget(rad_but_type_metal, 0, 1, Qt::AlignRight);
+    grid_material->addWidget(name, 1, 1, Qt::AlignRight);
     grid_material->addWidget(epsilon, 2, 1, Qt::AlignRight);
     grid_material->addWidget(mue, 3, 1, Qt::AlignRight);
     grid_material->addWidget(kappa, 4, 1, Qt::AlignRight);
@@ -93,18 +124,20 @@ void PageMaterials::MaterialsSettings(void)
     grid_material->addWidget(conductivity, 6, 1, Qt::AlignRight);
     grid_material->addWidget(thickness, 7, 1, Qt::AlignRight);
 
-    grid_material->addWidget(button_add_material, 8, 1, Qt::AlignRight);
+    grid_material->addWidget(button_add_edit_material, 8, 1, Qt::AlignRight);
+    grid_material->addWidget(button_remove_material, 8, 0, Qt::AlignRight);
 
     grid_material->addWidget(materials_list_widget, 0, 2, 7, 3, Qt::AlignRight);
 
+    OnSetMaterialType();
 }
 
 
-void PageMaterials::OnAddMaterial(void)
+void PageMaterials::OnAddOrChangeMaterial(void)
 {
     material_parameters_struct material_tmp;
     material_tmp.name = name->text();
-    material_tmp.type = type->text();
+    material_tmp.type = type;
     material_tmp.epsilon = epsilon->text();
     material_tmp.mue = mue->text();
     material_tmp.kappa = kappa->text();
@@ -112,11 +145,39 @@ void PageMaterials::OnAddMaterial(void)
     material_tmp.conductivity = conductivity->text();
     material_tmp.thickness = thickness->text();
 
-    materials_param_list_ptr->push_back(material_tmp);
+    if(!material_tmp.name.isEmpty())
+    {
+        if(materials_param_list_ptr->empty())
+        {
+            materials_param_list_ptr->push_back(material_tmp);
+            materials_list_widget->addItem(materials_param_list_ptr->at(materials_param_list_ptr->size()-1).name);
+            materials_list_widget->setCurrentRow(materials_list_widget->count()-1);
+            UploadMaterialsToViewer();
+        }
+        else if(materials_param_list_ptr->at(materials_list_widget->currentRow()).name != material_tmp.name)
+        {
+            materials_param_list_ptr->push_back(material_tmp);
+            materials_list_widget->addItem(materials_param_list_ptr->at(materials_param_list_ptr->size()-1).name);
+            materials_list_widget->setCurrentRow(materials_list_widget->count()-1);
+            UploadMaterialsToViewer();
+        }
+        else if(materials_param_list_ptr->at(materials_list_widget->currentRow()).name == material_tmp.name)
+        {
+            materials_param_list_ptr->replace(materials_list_widget->currentRow(), material_tmp);
+        }
+    }
+}
 
-    materials_list_widget->addItem(materials_param_list_ptr->at(materials_param_list_ptr->size()-1).name);
 
-    UploadMaterialsToViewer();
+
+void PageMaterials::OnRemoveMaterial(void)
+{
+    if(!materials_param_list_ptr->empty())
+    {
+        RemoveMaterialsFromViewer();
+        materials_param_list_ptr->remove(materials_list_widget->currentRow());
+        materials_list_widget->takeItem(materials_list_widget->currentRow());
+    }
 }
 
 
@@ -126,11 +187,48 @@ void PageMaterials::OnGetSelectedMaterial(QListWidgetItem* item)
     material_tmp = materials_param_list_ptr->at(materials_list_widget->currentRow());
 
     name->setText(material_tmp.name);
-    type->setText(material_tmp.type);
+    type = material_tmp.type;
     epsilon->setText(material_tmp.epsilon);
     mue->setText(material_tmp.mue);
     kappa->setText(material_tmp.kappa);
     sigma->setText(material_tmp.sigma);
     conductivity->setText(material_tmp.conductivity);
     thickness->setText(material_tmp.thickness);
+    if(!QString::compare(type, "material"))
+        rad_but_type_material->setChecked(true);
+    else if(!QString::compare(type, "metal"))
+        rad_but_type_metal->setChecked(true);
+    OnSetMaterialType();
+}
+
+void PageMaterials::OnSetMaterialType(void)
+{
+    if(rad_but_type_material->isChecked())
+    {
+        epsilon->setEnabled(true);
+        mue->setEnabled(true);
+        kappa->setEnabled(true);
+        sigma->setEnabled(true);
+        conductivity->setEnabled(false);
+        thickness->setEnabled(false);
+
+        type = "material";
+        conductivity->setText("");
+        thickness->setText("");
+    }
+    else if(rad_but_type_metal->isChecked())
+    {
+        epsilon->setEnabled(false);
+        mue->setEnabled(false);
+        kappa->setEnabled(false);
+        sigma->setEnabled(false);
+        conductivity->setEnabled(true);
+        thickness->setEnabled(true);
+
+        type = "metal";
+        epsilon->setText("");
+        mue->setText("");
+        kappa->setText("");
+        sigma->setText("");
+    }
 }
