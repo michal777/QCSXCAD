@@ -17,6 +17,7 @@
 #include <QHBoxLayout>
 #include <QStackedLayout>
 #include <QDebug>
+#include <QComboBox>
 //??
 #include "../QCSXCAD.h"
 #include "../QCSPrimEditor.h"
@@ -26,6 +27,7 @@
 #include "ParameterCoord.h"
 #include "CSPrimitives.h"
 #include "CSPrimBox.h"
+#include "CSPrimCylinder.h"
 #include "CSPropMetal.h"
 #include "CSProperties.h"
 #include "ContinuousStructure.h"
@@ -39,6 +41,8 @@ public:
     QString name;
     QString type;
     QString priority;
+    QString material;
+    int id;
 };
 
 class shape_box_parameters : public shape_parameters
@@ -91,9 +95,11 @@ public:
 
     void ShapeSelectLayout(void);
     void ShapeListLayout(void);
-    void UploadShapesToViewer(void);
+    void UploadShapesToViewer(bool is_new);
     void ShapeBoxSettings(void);
     void ShapeCylinderSettings(void);
+
+    virtual void initializePage(void);
 
 
     QRadioButton *rad_but_type_box;
@@ -117,6 +123,7 @@ public:
     QLineEdit *sh_box_y_coord_2;
     QLineEdit *sh_box_z_coord_1;
     QLineEdit *sh_box_z_coord_2;
+    QComboBox *sh_box_material;
 
     QLineEdit *sh_cylinder_name;
     QLineEdit *sh_cylinder_priority;
@@ -127,6 +134,9 @@ public:
     QLineEdit *sh_cylinder_z_coord_1;
     QLineEdit *sh_cylinder_z_coord_2;
     QLineEdit *sh_cylinder_radius;
+    QComboBox *sh_cylinder_material;
+
+    int id_incremental;
 
 public slots:
     void OnSetShapeTypeLayout(void);
