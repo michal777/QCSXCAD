@@ -25,7 +25,8 @@ void VariablesEditor::OnEvaluateVarTable()
 {
     QString line_var;
     QString line_value;
-    QScriptEngine expr_eval;
+    expr_eval = new QScriptEngine();
+   // QJSEngine myEngine;
     QScriptValue expr_value[tablesize];
 
     QString table_line;
@@ -38,7 +39,6 @@ void VariablesEditor::OnEvaluateVarTable()
     {
         for(i_expr = 0; i_expr < tablesize; ++i_expr)
         {
-
             line_var_tmp = var_table->item(i_expr, 0);
             line_value_tmp = var_table->item(i_expr, 1);
             if((line_var_tmp != NULL) && (line_value_tmp != NULL))
@@ -47,7 +47,7 @@ void VariablesEditor::OnEvaluateVarTable()
                 line_value = line_value_tmp->text();
                 table_line.clear();
                 table_line.append(QString("%1 = %2").arg(line_var).arg(line_value));
-                expr_value[i_expr] = expr_eval.evaluate(table_line);
+                expr_value[i_expr] = expr_eval->evaluate(table_line);
                 QTableWidgetItem *line_output_val_tmp = new QTableWidgetItem(0);
                 line_output_val_tmp->setText(expr_value[i_expr].toString());
                 var_table->setItem(i_expr, 2, line_output_val_tmp);
@@ -57,11 +57,5 @@ void VariablesEditor::OnEvaluateVarTable()
         }
         timeout--;
     } while(all_valid == 0 && timeout);
-
-    qDebug("value0=%s", qUtf8Printable(expr_value[0].toString()));
-    qDebug("value1=%s", qUtf8Printable(expr_value[1].toString()));
-    qDebug("value2=%s", qUtf8Printable(expr_value[2].toString()));
-    qDebug("value3=%s", qUtf8Printable(expr_value[3].toString()));
-    qDebug("value4=%s", qUtf8Printable(expr_value[4].toString()));
-
+    VarEdit();
 }

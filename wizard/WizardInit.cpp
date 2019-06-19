@@ -14,14 +14,17 @@ WizardInit::WizardInit(QCSXCAD *wizardsparent, QWidget *parent): QWizard(parent)
     wizardsparent_tmp = wizardsparent;
     file_main_settings = "app_settings.ini";
     main_settings = new QSettings(file_main_settings, QSettings::NativeFormat, this);
+
+   VariablesEditor *var_edit_main = new VariablesEditor(this);
+   var_edit_main->show();
+
     StartWizardWindow();    //dialog with workflow file selection will appear, when selected the listed pages are added to this wizard
     for(workflowfile->seek(0); !workflowfile->atEnd();)
-        this->addPage(ReturnWorkflowStep(workflowfile->readLine()));
-    VariablesEditor *var_edit = new VariablesEditor(this);
-    var_edit->show();
+        this->addPage(ReturnWorkflowStep(workflowfile->readLine(), var_edit_main));
 }
 
-QWizardPage *WizardInit::ReturnWorkflowStep(QString workflowname)
+
+QWizardPage *WizardInit::ReturnWorkflowStep(QString workflowname, VariablesEditor *var_edit_main)
 {
     if(!workflowname.compare("Start page\n"))
         return new PageStart(this, wizardsparent_tmp);
@@ -32,13 +35,13 @@ QWizardPage *WizardInit::ReturnWorkflowStep(QString workflowname)
     else if(!workflowname.compare("Materials\n"))
         return new PageMaterials(this, wizardsparent_tmp);
     else if(!workflowname.compare("Geometry\n"))
-        return new PageGeometry(this, wizardsparent_tmp);
+        return new PageGeometry(this, wizardsparent_tmp, var_edit_main);
     else if(!workflowname.compare("Ports\n"))
         return new PagePorts(this, wizardsparent_tmp);
     else if(!workflowname.compare("Results\n"))
         return new PageResultsSparam(this, wizardsparent_tmp);
-
 }
+
 
 void WizardInit::StartWizardWindow()
 {

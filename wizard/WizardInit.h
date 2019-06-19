@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QDialog>
 #include <QSettings>
+#include "VariablesEditor.h"
 //??
 #include "../QCSXCAD.h"
 
@@ -16,7 +17,7 @@ class WizardInit : public QWizard
     Q_OBJECT
 public:
     WizardInit(QCSXCAD *wizardsparent, QWidget *parent = 0);
-    QWizardPage *ReturnWorkflowStep(QString workflowname);
+    QWizardPage *ReturnWorkflowStep(QString workflowname, VariablesEditor *var_edit_main);
 
     QCSXCAD *wizardsparent_tmp;
 

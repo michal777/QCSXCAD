@@ -1,12 +1,13 @@
 #include "PageGeometry.h"
 
 
-PageGeometry::PageGeometry(QWizard *parent, QCSXCAD *wizardsparent): QWizardPage(parent)
+PageGeometry::PageGeometry(QWizard *parent, QCSXCAD *wizardsparent, VariablesEditor *var_edit_main): QWizardPage(parent)
 {
     wizardsparent_tmp = wizardsparent;
 
     QVector<shape_parameters *> *shapes_param_list = new QVector<shape_parameters *>;
     shapes_param_list_ptr = shapes_param_list;
+    var_edit = var_edit_main;
 
     ShapeSelectLayout();
     ShapeListLayout();
@@ -26,7 +27,6 @@ PageGeometry::PageGeometry(QWizard *parent, QCSXCAD *wizardsparent): QWizardPage
 
     setLayout(main_layout_shapes);
 
-    id_incremental = 0;
 }
 
 
@@ -48,8 +48,8 @@ void PageGeometry::SaveToSimScriptBuffer(void)
         {
             shape_box_parameters *shape_box_tmp = (shape_box_parameters *)(shapes_param_list_ptr->at(i_mat));
             text_save_to_simscript.append(QString("CSX = AddBox(CSX, '%1', %2, ").arg(shape_box_tmp->material).arg(shape_box_tmp->priority));
-            text_save_to_simscript.append(QString("[%1 %2 %3] ").arg(shape_box_tmp->x_coord_1).arg(shape_box_tmp->y_coord_1).arg(shape_box_tmp->z_coord_1));
-            text_save_to_simscript.append(QString("[%1 %2 %3]);\n").arg(shape_box_tmp->x_coord_2).arg(shape_box_tmp->y_coord_2).arg(shape_box_tmp->z_coord_2));
+            text_save_to_simscript.append(QString("[%1 %2 %3] ").arg(EvaluateVar(shape_box_tmp->x_coord_1)).arg(EvaluateVar(shape_box_tmp->y_coord_1)).arg(EvaluateVar(shape_box_tmp->z_coord_1)));
+            text_save_to_simscript.append(QString("[%1 %2 %3]);\n").arg(EvaluateVar(shape_box_tmp->x_coord_2)).arg(EvaluateVar(shape_box_tmp->y_coord_2)).arg(EvaluateVar(shape_box_tmp->z_coord_2)));
         }
         else if(shapes_param_list_ptr->at(i_mat)->type == "cylinder")
         {
@@ -67,88 +67,103 @@ void PageGeometry::SaveToSimScriptBuffer(void)
 
 
 void PageGeometry::ReadFromSimScriptBuffer(void)
-{/*
-    std::vector<CSPrimitives*> prop_vector_imported_to_wizard = wizardsparent_tmp->GetAllPrimitives(true, CSProperties::ANY);
-    CSPrimitives *prim_tmp = prop_vector_imported_to_wizard.at(0);
-    ParameterCoord *startcoord;
-    if(prim_tmp->GetType() == CSPrimitives::BOX)
-    {
-        CSPrimBox *imported_box = (CSPrimBox*)prim_tmp;
-        startcoord = imported_box->GetStartCoord();
-    }
-    thecord[0] = startcoord->GetCoordValue(0, CoordinateSystem::CARTESIAN);
-    thecord[1] = startcoord->GetCoordValue(1, CoordinateSystem::CARTESIAN);
-    thecord[2] = startcoord->GetCoordValue(2, CoordinateSystem::CARTESIAN);*/
+{
+
 }
 
 
-void PageGeometry::UploadShapesToViewer(bool is_new)
+unsigned int PageGeometry::UploadShapesToViewer(bool is_new)
 {
+    CSPrimitives *prim;
+    std::string old_prop_name;
+    CSProperties* material_property;
+
     if(rad_but_type_box->isChecked())
     {
-        shape_box_parameters *shape_selected = (shape_box_parameters *)(shapes_param_list_ptr->at(shapes_list_widget->currentRow()));
+        shape_box_parameters *shape_selected = (shape_box_parameters *)(shapes_param_list_ptr->at(shapes_list_widget->currentRow()));   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+        CSPrimBox *prim_box;
+
         if(is_new)
         {
-            CSProperties* material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0);
-            CSPrimBox *box_prim = new CSPrimBox(wizardsparent_tmp->clParaSet, wizardsparent_tmp->CSTree->GetCurrentProperty());
-
-            box_prim->SetPriority(shape_selected->priority.toInt());
-            box_prim->SetCoord(0, shape_selected->x_coord_1.toDouble());
-            box_prim->SetCoord(1, shape_selected->x_coord_2.toDouble());
-            box_prim->SetCoord(2, shape_selected->y_coord_1.toDouble());
-            box_prim->SetCoord(3, shape_selected->y_coord_2.toDouble());
-            box_prim->SetCoord(4, shape_selected->z_coord_1.toDouble());
-            box_prim->SetCoord(5, shape_selected->z_coord_2.toDouble());
-
-            material_property->AddPrimitive(box_prim);
-            wizardsparent_tmp->setModified();
-            wizardsparent_tmp->CSTree->AddPrimItem(box_prim);
+            prim_box = new CSPrimBox(wizardsparent_tmp->clParaSet, material_property);
         }
         else    //if shape is to be changed, not added
         {
             int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
-            qDebug("d_%d__", id_tmp);
-
-            CSPrimitives *prim_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
-            CSPrimBox *prim_box_tmp = prim_tmp->ToBox();
-            CSProperties* new_material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0);
-
-            prim_box_tmp->SetPriority(shape_selected->priority.toInt());    //set new parameters (after casting to proper type of pointer to shape)
-            prim_box_tmp->SetCoord(0, shape_selected->x_coord_1.toDouble());
-            prim_box_tmp->SetCoord(1, shape_selected->x_coord_2.toDouble());
-            prim_box_tmp->SetCoord(2, shape_selected->y_coord_1.toDouble());
-            prim_box_tmp->SetCoord(3, shape_selected->y_coord_2.toDouble());
-            prim_box_tmp->SetCoord(4, shape_selected->z_coord_1.toDouble());
-            prim_box_tmp->SetCoord(5, shape_selected->z_coord_2.toDouble());
-            wizardsparent_tmp->CSTree->SwitchProperty((CSPrimitives *)(prim_box_tmp), new_material_property);
-            wizardsparent_tmp->setModified();
+            CSPrimitives *prim_box_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_box = prim_box_tmp->ToBox();
+            old_prop_name = prim_box_tmp->GetProperty()->GetName();
         }
+
+        prim_box->SetPriority(shape_selected->priority.toInt());
+        prim_box->SetCoord(0, EvaluateVar(shape_selected->x_coord_1).toDouble());
+        prim_box->SetCoord(1, EvaluateVar(shape_selected->x_coord_2).toDouble());
+        prim_box->SetCoord(2, EvaluateVar(shape_selected->y_coord_1).toDouble());
+        prim_box->SetCoord(3, EvaluateVar(shape_selected->y_coord_2).toDouble());
+        prim_box->SetCoord(4, EvaluateVar(shape_selected->z_coord_1).toDouble());
+        prim_box->SetCoord(5, EvaluateVar(shape_selected->z_coord_2).toDouble());
+
+        prim = (CSPrimitives *)(prim_box);
     }
     else if(rad_but_type_cylinder->isChecked())
     {
         shape_cylinder_parameters *shape_selected = (shape_cylinder_parameters *)(shapes_param_list_ptr->at(shapes_list_widget->currentRow()));
-
-        CSProperties* material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0);
-        CSPrimCylinder *cylinder_prim = new CSPrimCylinder(wizardsparent_tmp->clParaSet, material_property);
-
-        cylinder_prim->SetPriority(shape_selected->priority.toInt());
-        cylinder_prim->SetCoord(0, shape_selected->x_coord_1.toDouble());
-        cylinder_prim->SetCoord(1, shape_selected->x_coord_2.toDouble());
-        cylinder_prim->SetCoord(2, shape_selected->y_coord_1.toDouble());
-        cylinder_prim->SetCoord(3, shape_selected->y_coord_2.toDouble());
-        cylinder_prim->SetCoord(4, shape_selected->z_coord_1.toDouble());
-        cylinder_prim->SetCoord(5, shape_selected->z_coord_2.toDouble());
-        cylinder_prim->SetRadius(shape_selected->radius.toDouble());
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+        CSPrimCylinder *prim_cylinder;
 
         if(is_new)
         {
-            material_property->AddPrimitive(cylinder_prim);
-            wizardsparent_tmp->setModified();
-            wizardsparent_tmp->CSTree->AddPrimItem(cylinder_prim);
+            prim_cylinder = new CSPrimCylinder(wizardsparent_tmp->clParaSet, material_property);
         }
+        else
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id;
+            CSPrimitives *prim_cylinder_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp);
+            prim_cylinder = prim_cylinder_tmp->ToCylinder();
+            old_prop_name = prim_cylinder_tmp->GetProperty()->GetName();
+        }
+
+        prim_cylinder->SetPriority(shape_selected->priority.toInt());
+        prim_cylinder->SetCoord(0, shape_selected->x_coord_1.toDouble());
+        prim_cylinder->SetCoord(1, shape_selected->x_coord_2.toDouble());
+        prim_cylinder->SetCoord(2, shape_selected->y_coord_1.toDouble());
+        prim_cylinder->SetCoord(3, shape_selected->y_coord_2.toDouble());
+        prim_cylinder->SetCoord(4, shape_selected->z_coord_1.toDouble());
+        prim_cylinder->SetCoord(5, shape_selected->z_coord_2.toDouble());
+        prim_cylinder->SetRadius(shape_selected->radius.toDouble());
+
+        prim = (CSPrimitives *)(prim_cylinder);
     }
 
 
+    if(is_new)
+    {
+        wizardsparent_tmp->setModified();
+        wizardsparent_tmp->CSTree->AddPrimItem(prim);
+        return prim->GetID();
+    }
+    else
+    {
+        if(material_property->GetName() != old_prop_name)
+        {
+            material_property->AddPrimitive(prim);
+            wizardsparent_tmp->CSTree->SwitchProperty((CSPrimitives *)(prim), material_property);
+        }
+        wizardsparent_tmp->setModified();
+    }
+
+
+}
+
+
+void PageGeometry::RemoveShapesFromViewer(void)
+{
+    int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id;
+    CSPrimitives *prim_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp);
+    wizardsparent_tmp->CSTree->DeletePrimItem(prim_tmp);
+    wizardsparent_tmp->DeletePrimitive(prim_tmp);
+    wizardsparent_tmp->setModified();
 }
 
 /*copied
@@ -259,18 +274,24 @@ void PageGeometry::ShapeBoxSettings(void)
     sh_box_name = new QLineEdit(this);
     QLabel *sh_box_statictext_priority = new QLabel("priority", this);
     sh_box_priority = new QLineEdit(this);
-    QLabel *sh_box_statictext_xstart = new QLabel("x start", this);
-    sh_box_x_coord_1 = new QLineEdit(this);
+    QLabel *sh_box_statictext_xstart = new QLabel("x start", this);    
+    sh_box_x_coord_1 = new QComboBox(this);
+    sh_box_x_coord_1->setEditable(true);
     QLabel *sh_box_statictext_xstop = new QLabel("x stop", this);
-    sh_box_x_coord_2 = new QLineEdit(this);
+    sh_box_x_coord_2 = new QComboBox(this);
+    sh_box_x_coord_2->setEditable(true);
     QLabel *sh_box_statictext_ystart = new QLabel("y start", this);
-    sh_box_y_coord_1 = new QLineEdit(this);
+    sh_box_y_coord_1 = new QComboBox(this);
+    sh_box_y_coord_1->setEditable(true);
     QLabel *sh_box_statictext_ystop = new QLabel("y stop", this);
-    sh_box_y_coord_2 = new QLineEdit(this);
+    sh_box_y_coord_2 = new QComboBox(this);
+    sh_box_y_coord_2->setEditable(true);
     QLabel *sh_box_statictext_zstart = new QLabel("z start", this);
-    sh_box_z_coord_1 = new QLineEdit(this);
+    sh_box_z_coord_1 = new QComboBox(this);
+    sh_box_z_coord_1->setEditable(true);
     QLabel *sh_box_statictext_zstop = new QLabel("z stop", this);
-    sh_box_z_coord_2 = new QLineEdit(this);
+    sh_box_z_coord_2 = new QComboBox(this);
+    sh_box_z_coord_2->setEditable(true);
     QLabel *sh_box_statictext_material = new QLabel("material", this);
     sh_box_material = new QComboBox(this);
     QLabel *sh_box_statictext_placeholder = new QLabel("", this);
@@ -356,50 +377,21 @@ void PageGeometry::ShapeCylinderSettings(void)
 
 void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewer, changing them if shape with the same name already exist
 {
+    shape_parameters *shape_ptr;
     if(rad_but_type_box->isChecked())   //do this for selected type of shape
     {
         shape_box_parameters *shape_tmp_ptr = new shape_box_parameters; //object that will be filled with parameters from user input controls and then added to list (after casting)
         shape_tmp_ptr->name = sh_box_name->text();
         shape_tmp_ptr->type = "box";
         shape_tmp_ptr->priority = sh_box_priority->text();
-        shape_tmp_ptr->x_coord_1 = sh_box_x_coord_1->text();
-        shape_tmp_ptr->x_coord_2 = sh_box_x_coord_2->text();
-        shape_tmp_ptr->y_coord_1 = sh_box_y_coord_1->text();
-        shape_tmp_ptr->y_coord_2 = sh_box_y_coord_2->text();
-        shape_tmp_ptr->z_coord_1 = sh_box_z_coord_1->text();
-        shape_tmp_ptr->z_coord_2 = sh_box_z_coord_2->text();
+        shape_tmp_ptr->x_coord_1 = sh_box_x_coord_1->currentText();
+        shape_tmp_ptr->x_coord_2 = sh_box_x_coord_2->currentText();
+        shape_tmp_ptr->y_coord_1 = sh_box_y_coord_1->currentText();
+        shape_tmp_ptr->y_coord_2 = sh_box_y_coord_2->currentText();
+        shape_tmp_ptr->z_coord_1 = sh_box_z_coord_1->currentText();
+        shape_tmp_ptr->z_coord_2 = sh_box_z_coord_2->currentText();
         shape_tmp_ptr->material = sh_box_material->currentText();
-
-        if(!shape_tmp_ptr->name.isEmpty())
-        {
-            if(shapes_param_list_ptr->empty())  //add shape if list is empty
-            {
-                shape_tmp_ptr->id = id_incremental; //set id (should be the same as in QCSXCAD)
-                shapes_param_list_ptr->push_back(shape_tmp_ptr);    //add shape to the list in the wizard
-                shapes_list_widget->addItem(shapes_param_list_ptr->at(shapes_param_list_ptr->size()-1)->name);    //add shape to the list widget
-                shapes_list_widget->setCurrentRow(shapes_list_widget->count()-1);
-                UploadShapesToViewer(true); //and add it to the AppQCSXCAD
-                ++id_incremental;    //if shape is added then ID is incremented, this is to be able to identify primitives already added to QCSXCAD
-//                delete shape_tmp_ptr;
-            }
-            else if(shapes_param_list_ptr->at(shapes_list_widget->currentRow())->name != shape_tmp_ptr->name)   //add if list is not empty and it's a new one (different name)
-            {
-                shape_tmp_ptr->id = id_incremental;
-                shapes_param_list_ptr->push_back(shape_tmp_ptr);
-                shapes_list_widget->addItem(shapes_param_list_ptr->at(shapes_param_list_ptr->size()-1)->name);
-                shapes_list_widget->setCurrentRow(shapes_list_widget->count()-1);
-                UploadShapesToViewer(true);
-                ++id_incremental;
-//                delete shape_tmp_ptr;
-            }
-            else if(shapes_param_list_ptr->at(shapes_list_widget->currentRow())->name == shape_tmp_ptr->name)   //if name set by the used is the same as present on the list widget then update the shape
-            {
-                shape_tmp_ptr->id = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //set the same ID as before
-                shapes_param_list_ptr->replace(shapes_list_widget->currentRow(), shape_tmp_ptr);
-                UploadShapesToViewer(false);    //false means the shape is not new and should be edited, not added
-//                delete shape_tmp_ptr;
-            }
-        }
+        shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_cylinder->isChecked())
     {
@@ -415,31 +407,26 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         shape_tmp_ptr->z_coord_2 = sh_cylinder_z_coord_2->text();
         shape_tmp_ptr->radius = sh_cylinder_radius->text();
         shape_tmp_ptr->material = sh_cylinder_material->currentText();
+        shape_ptr = shape_tmp_ptr;
+    }
 
-        if(!shape_tmp_ptr->name.isEmpty())
+
+    // Add the configured above primitive to the lists in the wizard and in the QCSXCAD:
+    if(!shape_ptr->name.isEmpty())
+    {
+        if(shapes_param_list_ptr->empty() || shapes_param_list_ptr->at(shapes_list_widget->currentRow())->name != shape_ptr->name)
         {
-            if(shapes_param_list_ptr->empty())
-            {
-                shapes_param_list_ptr->push_back(shape_tmp_ptr);
-                shapes_list_widget->addItem(shapes_param_list_ptr->at(shapes_param_list_ptr->size()-1)->name);
-                shapes_list_widget->setCurrentRow(shapes_list_widget->count()-1);
-                UploadShapesToViewer(true);
-//                delete shape_tmp_ptr;
-            }
-            else if(shapes_param_list_ptr->at(shapes_list_widget->currentRow())->name != shape_tmp_ptr->name)
-            {
-                shapes_param_list_ptr->push_back(shape_tmp_ptr);
-                shapes_list_widget->addItem(shapes_param_list_ptr->at(shapes_param_list_ptr->size()-1)->name);
-                shapes_list_widget->setCurrentRow(shapes_list_widget->count()-1);
-                UploadShapesToViewer(true);
-//                delete shape_tmp_ptr;
-            }
-            else if(shapes_param_list_ptr->at(shapes_list_widget->currentRow())->name == shape_tmp_ptr->name)
-            {
-                shapes_param_list_ptr->replace(shapes_list_widget->currentRow(), shape_tmp_ptr);
-                UploadShapesToViewer(true);
-//                delete shape_tmp_ptr;
-            }
+            shapes_param_list_ptr->push_back(shape_ptr);
+            shapes_list_widget->addItem(shapes_param_list_ptr->at(shapes_param_list_ptr->size()-1)->name);
+            shapes_list_widget->setCurrentRow(shapes_list_widget->count()-1);
+            int id_tmp = UploadShapesToViewer(true);
+            shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id = id_tmp;
+        }
+        else if(shapes_param_list_ptr->at(shapes_list_widget->currentRow())->name == shape_ptr->name)
+        {
+            shape_ptr->id = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id;
+            shapes_param_list_ptr->replace(shapes_list_widget->currentRow(), shape_ptr);
+            UploadShapesToViewer(false);
         }
     }
 }
@@ -451,10 +438,9 @@ void PageGeometry::OnRemoveShape(void)
     if(!shapes_param_list_ptr->empty())
     {
         shape_parameters *shape_to_del = shapes_param_list_ptr->at(shapes_list_widget->currentRow());
-
+        RemoveShapesFromViewer();
         shapes_param_list_ptr->remove(shapes_list_widget->currentRow());
         shapes_list_widget->takeItem(shapes_list_widget->currentRow());
-
         delete shape_to_del;    //TODO FIXME i dont know if it's the right way to delete shape item created by "new" in OnAddOrChangeShape
     }
 }
@@ -472,13 +458,14 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         rad_but_type_box->setChecked(true);
         sh_box_name->setText(shape_box_tmp->name);
         sh_box_priority->setText(shape_box_tmp->priority);
-        sh_box_x_coord_1->setText(shape_box_tmp->x_coord_1);
-        sh_box_x_coord_2->setText(shape_box_tmp->x_coord_2);
-        sh_box_y_coord_1->setText(shape_box_tmp->y_coord_1);
-        sh_box_y_coord_2->setText(shape_box_tmp->y_coord_2);
-        sh_box_z_coord_1->setText(shape_box_tmp->z_coord_1);
-        sh_box_z_coord_2->setText(shape_box_tmp->z_coord_2);
+        sh_box_x_coord_1->setEditText(shape_box_tmp->x_coord_1);
+        sh_box_x_coord_2->setEditText(shape_box_tmp->x_coord_2);
+        sh_box_y_coord_1->setEditText(shape_box_tmp->y_coord_1);
+        sh_box_y_coord_2->setEditText(shape_box_tmp->y_coord_2);
+        sh_box_z_coord_1->setEditText(shape_box_tmp->z_coord_1);
+        sh_box_z_coord_2->setEditText(shape_box_tmp->z_coord_2);
         sh_box_material->setCurrentIndex(sh_box_material->findText(shape_box_tmp->material));
+        stackedLayout->setCurrentIndex(0);
     }
     else if(!QString::compare(shape_tmp_ptr->type, "cylinder"))
     {
@@ -494,9 +481,8 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         sh_cylinder_z_coord_2->setText(shape_cylinder_tmp->z_coord_2);
         sh_cylinder_radius->setText(shape_cylinder_tmp->radius);
         sh_cylinder_material->setCurrentIndex(sh_cylinder_material->findText(shape_cylinder_tmp->material));
+        stackedLayout->setCurrentIndex(1);
     }
-
-    OnSetShapeTypeLayout();
 }
 
 
@@ -507,14 +493,20 @@ void PageGeometry::OnSetShapeTypeLayout(void)   //called to change layout accord
         stackedLayout->setCurrentIndex(0);
         for(int i = 0 ; i < shapes_list_widget->count(); ++i)
             if(shapes_list_widget->item(i)->text() == sh_box_name->text())
+            {
                 shapes_list_widget->setCurrentRow(i);
+                OnGetSelectedShape(NULL);
+            }
     }
     else if(rad_but_type_cylinder->isChecked())
     {
         stackedLayout->setCurrentIndex(1);
         for(int i = 0 ; i < shapes_list_widget->count(); ++i)
             if(shapes_list_widget->item(i)->text() == sh_cylinder_name->text())
+            {
                 shapes_list_widget->setCurrentRow(i);
+                OnGetSelectedShape(NULL);
+            }
     }
 }
 
@@ -533,4 +525,33 @@ void PageGeometry::initializePage() //load all materials, to be accessible to se
         sh_box_material->addItem(str);  //add to all primitives type (could be avoided if material were not in QStackedLayout)
         sh_cylinder_material->addItem(str);
     }
+
+    UpdateVariableLists();
+}
+
+
+void PageGeometry::UpdateVariableLists(void)
+{
+    sh_box_x_coord_1->clear();
+    sh_box_x_coord_2->clear();
+    sh_box_y_coord_1->clear();
+    sh_box_y_coord_2->clear();
+    sh_box_z_coord_1->clear();
+    sh_box_z_coord_2->clear();
+    for(int i_expr = 0; i_expr < var_edit->GetVarTable()->rowCount(); ++i_expr)
+        if((var_edit->GetVarTable()->item(i_expr, 0) != NULL) && (var_edit->GetVarTable()->item(i_expr, 1) != NULL))
+        {
+            sh_box_x_coord_1->addItem(var_edit->GetVarTable()->item(i_expr,0)->text());
+            sh_box_x_coord_2->addItem(var_edit->GetVarTable()->item(i_expr,0)->text());
+            sh_box_y_coord_1->addItem(var_edit->GetVarTable()->item(i_expr,0)->text());
+            sh_box_y_coord_2->addItem(var_edit->GetVarTable()->item(i_expr,0)->text());
+            sh_box_z_coord_1->addItem(var_edit->GetVarTable()->item(i_expr,0)->text());
+            sh_box_z_coord_2->addItem(var_edit->GetVarTable()->item(i_expr,0)->text());
+        }
+}
+
+
+QString PageGeometry::EvaluateVar(QString var_to_eval)
+{
+    return var_edit->GetExprEngine()->evaluate(var_to_eval).toString();
 }

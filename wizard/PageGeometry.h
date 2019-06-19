@@ -18,6 +18,7 @@
 #include <QStackedLayout>
 #include <QDebug>
 #include <QComboBox>
+#include "VariablesEditor.h"
 //??
 #include "../QCSXCAD.h"
 #include "../QCSPrimEditor.h"
@@ -42,7 +43,7 @@ public:
     QString type;
     QString priority;
     QString material;
-    int id;
+    unsigned int id;
 };
 
 class shape_box_parameters : public shape_parameters
@@ -74,7 +75,7 @@ class PageGeometry : public QWizardPage
 {
     Q_OBJECT
 public:
-    PageGeometry(QWizard *parent, QCSXCAD *wizardsparent);
+    PageGeometry(QWizard *parent, QCSXCAD *wizardsparent, VariablesEditor *var_edit_main);
 
     bool validatePage();
     void SaveToSimScriptBuffer(void);
@@ -82,6 +83,8 @@ public:
     QString text_save_to_simscript;
 
     QCSXCAD *wizardsparent_tmp;
+    VariablesEditor *var_edit;
+    QString EvaluateVar(QString var_to_eval);
 
     QListWidget *shapes_list_widget;
     QVector<shape_parameters *> *shapes_param_list_ptr;
@@ -95,7 +98,8 @@ public:
 
     void ShapeSelectLayout(void);
     void ShapeListLayout(void);
-    void UploadShapesToViewer(bool is_new);
+    unsigned int UploadShapesToViewer(bool is_new);
+    void RemoveShapesFromViewer(void);
     void ShapeBoxSettings(void);
     void ShapeCylinderSettings(void);
 
@@ -117,12 +121,12 @@ public:
 
     QLineEdit *sh_box_name;
     QLineEdit *sh_box_priority;
-    QLineEdit *sh_box_x_coord_1;
-    QLineEdit *sh_box_x_coord_2;
-    QLineEdit *sh_box_y_coord_1;
-    QLineEdit *sh_box_y_coord_2;
-    QLineEdit *sh_box_z_coord_1;
-    QLineEdit *sh_box_z_coord_2;
+    QComboBox *sh_box_x_coord_1;
+    QComboBox *sh_box_x_coord_2;
+    QComboBox *sh_box_y_coord_1;
+    QComboBox *sh_box_y_coord_2;
+    QComboBox *sh_box_z_coord_1;
+    QComboBox *sh_box_z_coord_2;
     QComboBox *sh_box_material;
 
     QLineEdit *sh_cylinder_name;
@@ -136,25 +140,13 @@ public:
     QLineEdit *sh_cylinder_radius;
     QComboBox *sh_cylinder_material;
 
-    int id_incremental;
 
 public slots:
     void OnSetShapeTypeLayout(void);
     void OnAddOrChangeShape(void);
     void OnRemoveShape(void);
     void OnGetSelectedShape(QListWidgetItem* item);
-
-
-
-
-
-
-
-
-
-
-
-
+    void UpdateVariableLists(void);
 
 };
 
