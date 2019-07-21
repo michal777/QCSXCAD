@@ -17,6 +17,13 @@ PageGeometry::PageGeometry(QWizard *parent, QCSXCAD *wizardsparent, VariablesEdi
     ShapeSphericalshellSettings();
     ShapeCylinderSettings();
     ShapeCylindricalshellSettings();
+    ShapeCurveSettings();
+    ShapeWireSettings();
+    ShapePolygonSettings();
+    ShapeExtrudedPolygonSettings();
+    ShapeRotationalPolygonSettings();
+    ShapePolyhedronSettings();
+    ShapeSTLfileSettings();
 
     stackedLayout = new QStackedLayout;
     stackedLayout->addWidget(groupbox_box_settings);
@@ -24,6 +31,13 @@ PageGeometry::PageGeometry(QWizard *parent, QCSXCAD *wizardsparent, VariablesEdi
     stackedLayout->addWidget(groupbox_sphericalshell_settings);
     stackedLayout->addWidget(groupbox_cylinder_settings);
     stackedLayout->addWidget(groupbox_cylindricalshell_settings);
+    stackedLayout->addWidget(groupbox_curve_settings);
+    stackedLayout->addWidget(groupbox_wire_settings);
+    stackedLayout->addWidget(groupbox_polygon_settings);
+    stackedLayout->addWidget(groupbox_extrudedpolygon_settings);
+    stackedLayout->addWidget(groupbox_rotationalpolygon_settings);
+    stackedLayout->addWidget(groupbox_polyhedron_settings);
+    stackedLayout->addWidget(groupbox_stlfile_settings);
 
     main_layout_shapes = new QHBoxLayout;
     main_layout_shapes->addWidget(shape_select_groupbox);
@@ -172,6 +186,182 @@ void PageGeometry::SaveToSimScriptBuffer(void)
             }
             text_save_to_simscript.append(QString(");\n"));
         }
+        else if(shapes_param_list_ptr->at(i_sh)->type == "curve")
+        {
+            shape_curve_parameters *shape_curve_tmp = (shape_curve_parameters *)(shapes_param_list_ptr->at(i_sh));
+
+            for(int i_pcpy = 0; i_pcpy < shape_curve_tmp->points_x.size() && i_pcpy < shape_curve_tmp->points_y.size() && i_pcpy < shape_curve_tmp->points_z.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3; points(3, %1) = %4;\n").arg(i_pcpy).arg(EvaluateVar(shape_curve_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_curve_tmp->points_y[i_pcpy])).arg(EvaluateVar(shape_curve_tmp->points_z[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddCurve(CSX, '%1', %2, points").arg(shape_curve_tmp->material).arg(EvaluateVar(shape_curve_tmp->priority)));
+
+            if(shape_curve_tmp->transf_order[0] == "Scale" || shape_curve_tmp->transf_order[0] == "Rotate" || shape_curve_tmp->transf_order[0] == "Move")
+            {
+                text_save_to_simscript.append(QString(", 'Transform',{"));
+                for(int i_tr = 0; shape_curve_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+                {
+                    if(shape_curve_tmp->transf_order[i_tr] == "Scale")
+                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_curve_tmp->transf_scale_x)).arg(EvaluateVar(shape_curve_tmp->transf_scale_y)).arg(EvaluateVar(shape_curve_tmp->transf_scale_z)));
+                    if(shape_curve_tmp->transf_order[i_tr] == "Rotate")
+                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_curve_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_curve_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_curve_tmp->transf_rotate_az)).arg(EvaluateVar(shape_curve_tmp->transf_rotate_angle)));
+                    if(shape_curve_tmp->transf_order[i_tr] == "Move")
+                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_curve_tmp->transf_move_x)).arg(EvaluateVar(shape_curve_tmp->transf_move_y)).arg(EvaluateVar(shape_curve_tmp->transf_move_z)));
+                }
+                text_save_to_simscript.chop(2); //cut the last space and comma
+                text_save_to_simscript.append(QString("}"));
+            }
+            text_save_to_simscript.append(QString(");\n"));
+        }
+        else if(shapes_param_list_ptr->at(i_sh)->type == "wire")
+        {
+            shape_wire_parameters *shape_wire_tmp = (shape_wire_parameters *)(shapes_param_list_ptr->at(i_sh));
+
+            for(int i_pcpy = 0; i_pcpy < shape_wire_tmp->points_x.size() && i_pcpy < shape_wire_tmp->points_y.size() && i_pcpy < shape_wire_tmp->points_z.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3; points(3, %1) = %4;\n").arg(i_pcpy).arg(EvaluateVar(shape_wire_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_wire_tmp->points_y[i_pcpy])).arg(EvaluateVar(shape_wire_tmp->points_z[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddWire(CSX, '%1', %2, points, %3").arg(shape_wire_tmp->material).arg(EvaluateVar(shape_wire_tmp->priority)).arg(EvaluateVar(shape_wire_tmp->radius)));
+
+            if(shape_wire_tmp->transf_order[0] == "Scale" || shape_wire_tmp->transf_order[0] == "Rotate" || shape_wire_tmp->transf_order[0] == "Move")
+            {
+                text_save_to_simscript.append(QString(", 'Transform',{"));
+                for(int i_tr = 0; shape_wire_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+                {
+                    if(shape_wire_tmp->transf_order[i_tr] == "Scale")
+                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_wire_tmp->transf_scale_x)).arg(EvaluateVar(shape_wire_tmp->transf_scale_y)).arg(EvaluateVar(shape_wire_tmp->transf_scale_z)));
+                    if(shape_wire_tmp->transf_order[i_tr] == "Rotate")
+                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_wire_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_wire_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_wire_tmp->transf_rotate_az)).arg(EvaluateVar(shape_wire_tmp->transf_rotate_angle)));
+                    if(shape_wire_tmp->transf_order[i_tr] == "Move")
+                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_wire_tmp->transf_move_x)).arg(EvaluateVar(shape_wire_tmp->transf_move_y)).arg(EvaluateVar(shape_wire_tmp->transf_move_z)));
+                }
+                text_save_to_simscript.chop(2); //cut the last space and comma
+                text_save_to_simscript.append(QString("}"));
+            }
+            text_save_to_simscript.append(QString(");\n"));
+        }
+        else if(shapes_param_list_ptr->at(i_sh)->type == "polygon")
+        {
+            shape_polygon_parameters *shape_polygon_tmp = (shape_polygon_parameters *)(shapes_param_list_ptr->at(i_sh));
+
+            for(int i_pcpy = 0; i_pcpy < shape_polygon_tmp->points_x.size() && i_pcpy < shape_polygon_tmp->points_y.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_polygon_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_polygon_tmp->points_y[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddPolygon(CSX, '%1', %2, %3, %4, points").arg(shape_polygon_tmp->material).arg(EvaluateVar(shape_polygon_tmp->priority)).arg(shape_polygon_tmp->normal_dir).arg(EvaluateVar(shape_polygon_tmp->elevation)));
+
+            if(shape_polygon_tmp->transf_order[0] == "Scale" || shape_polygon_tmp->transf_order[0] == "Rotate" || shape_polygon_tmp->transf_order[0] == "Move")
+            {
+                text_save_to_simscript.append(QString(", 'Transform',{"));
+                for(int i_tr = 0; shape_polygon_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+                {
+                    if(shape_polygon_tmp->transf_order[i_tr] == "Scale")
+                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_polygon_tmp->transf_scale_x)).arg(EvaluateVar(shape_polygon_tmp->transf_scale_y)).arg(EvaluateVar(shape_polygon_tmp->transf_scale_z)));
+                    if(shape_polygon_tmp->transf_order[i_tr] == "Rotate")
+                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_polygon_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_polygon_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_polygon_tmp->transf_rotate_az)).arg(EvaluateVar(shape_polygon_tmp->transf_rotate_angle)));
+                    if(shape_polygon_tmp->transf_order[i_tr] == "Move")
+                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_polygon_tmp->transf_move_x)).arg(EvaluateVar(shape_polygon_tmp->transf_move_y)).arg(EvaluateVar(shape_polygon_tmp->transf_move_z)));
+                }
+                text_save_to_simscript.chop(2); //cut the last space and comma
+                text_save_to_simscript.append(QString("}"));
+            }
+            text_save_to_simscript.append(QString(");\n"));
+        }
+        else if(shapes_param_list_ptr->at(i_sh)->type == "extrudedpolygon")
+        {
+            shape_extrudedpolygon_parameters *shape_extrudedpolygon_tmp = (shape_extrudedpolygon_parameters *)(shapes_param_list_ptr->at(i_sh));
+
+            for(int i_pcpy = 0; i_pcpy < shape_extrudedpolygon_tmp->points_x.size() && i_pcpy < shape_extrudedpolygon_tmp->points_y.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_extrudedpolygon_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_extrudedpolygon_tmp->points_y[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddLinPoly(CSX, '%1', %2, %3, %4, points, %5").arg(shape_extrudedpolygon_tmp->material).arg(EvaluateVar(shape_extrudedpolygon_tmp->priority)).arg(shape_extrudedpolygon_tmp->normal_dir).arg(EvaluateVar(shape_extrudedpolygon_tmp->elevation)).arg(EvaluateVar(shape_extrudedpolygon_tmp->length)));
+
+            if(shape_extrudedpolygon_tmp->transf_order[0] == "Scale" || shape_extrudedpolygon_tmp->transf_order[0] == "Rotate" || shape_extrudedpolygon_tmp->transf_order[0] == "Move")
+            {
+                text_save_to_simscript.append(QString(", 'Transform',{"));
+                for(int i_tr = 0; shape_extrudedpolygon_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+                {
+                    if(shape_extrudedpolygon_tmp->transf_order[i_tr] == "Scale")
+                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_scale_x)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_scale_y)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_scale_z)));
+                    if(shape_extrudedpolygon_tmp->transf_order[i_tr] == "Rotate")
+                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_az)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_angle)));
+                    if(shape_extrudedpolygon_tmp->transf_order[i_tr] == "Move")
+                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_move_x)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_move_y)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_move_z)));
+                }
+                text_save_to_simscript.chop(2); //cut the last space and comma
+                text_save_to_simscript.append(QString("}"));
+            }
+            text_save_to_simscript.append(QString(");\n"));
+        }
+        else if(shapes_param_list_ptr->at(i_sh)->type == "rotationalpolygon")
+        {
+            shape_rotationalpolygon_parameters *shape_rotationalpolygon_tmp = (shape_rotationalpolygon_parameters *)(shapes_param_list_ptr->at(i_sh));
+
+            for(int i_pcpy = 0; i_pcpy < shape_rotationalpolygon_tmp->points_x.size() && i_pcpy < shape_rotationalpolygon_tmp->points_y.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_rotationalpolygon_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_rotationalpolygon_tmp->points_y[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddRotPoly(CSX, '%1', %2, %3, points, %4, [%5 %6]").arg(shape_rotationalpolygon_tmp->material).arg(EvaluateVar(shape_rotationalpolygon_tmp->priority)).arg(shape_rotationalpolygon_tmp->normal_dir).arg(EvaluateVar(shape_rotationalpolygon_tmp->rot_axis_dir)).arg(EvaluateVar(shape_rotationalpolygon_tmp->angle1)).arg(EvaluateVar(shape_rotationalpolygon_tmp->angle2)));
+
+            if(shape_rotationalpolygon_tmp->transf_order[0] == "Scale" || shape_rotationalpolygon_tmp->transf_order[0] == "Rotate" || shape_rotationalpolygon_tmp->transf_order[0] == "Move")
+            {
+                text_save_to_simscript.append(QString(", 'Transform',{"));
+                for(int i_tr = 0; shape_rotationalpolygon_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+                {
+                    if(shape_rotationalpolygon_tmp->transf_order[i_tr] == "Scale")
+                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_scale_x)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_scale_y)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_scale_z)));
+                    if(shape_rotationalpolygon_tmp->transf_order[i_tr] == "Rotate")
+                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_az)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_angle)));
+                    if(shape_rotationalpolygon_tmp->transf_order[i_tr] == "Move")
+                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_move_x)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_move_y)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_move_z)));
+                }
+                text_save_to_simscript.chop(2); //cut the last space and comma
+                text_save_to_simscript.append(QString("}"));
+            }
+            text_save_to_simscript.append(QString(");\n"));
+        }
+        else if(shapes_param_list_ptr->at(i_sh)->type == "polyhedron")
+        {
+            shape_polyhedron_parameters *shape_polyhedron_tmp = (shape_polyhedron_parameters *)(shapes_param_list_ptr->at(i_sh));
+
+            for(int i_pcpy = 0; i_pcpy < shape_polyhedron_tmp->vertices_x.size() && i_pcpy < shape_polyhedron_tmp->vertices_y.size() && i_pcpy < shape_polyhedron_tmp->vertices_z.size(); ++i_pcpy)
+            {
+                text_save_to_simscript.append(QString("vertices{%1} = [%2 %3 %4];\n").arg(i_pcpy).arg(EvaluateVar(shape_polyhedron_tmp->vertices_x[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->vertices_y[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->vertices_z[i_pcpy])));
+                text_save_to_simscript.append(QString("faces{%1} = [%2 %3 %4];\n").arg(i_pcpy).arg(EvaluateVar(shape_polyhedron_tmp->faces_x[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->faces_y[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->faces_z[i_pcpy])));
+            }
+            text_save_to_simscript.append(QString("CSX = AddPolyhedron(CSX, '%1', %2, vertices, faces").arg(shape_polyhedron_tmp->material).arg(EvaluateVar(shape_polyhedron_tmp->priority)));
+
+            if(shape_polyhedron_tmp->transf_order[0] == "Scale" || shape_polyhedron_tmp->transf_order[0] == "Rotate" || shape_polyhedron_tmp->transf_order[0] == "Move")
+            {
+                text_save_to_simscript.append(QString(", 'Transform',{"));
+                for(int i_tr = 0; shape_polyhedron_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+                {
+                    if(shape_polyhedron_tmp->transf_order[i_tr] == "Scale")
+                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_polyhedron_tmp->transf_scale_x)).arg(EvaluateVar(shape_polyhedron_tmp->transf_scale_y)).arg(EvaluateVar(shape_polyhedron_tmp->transf_scale_z)));
+                    if(shape_polyhedron_tmp->transf_order[i_tr] == "Rotate")
+                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_az)).arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_angle)));
+                    if(shape_polyhedron_tmp->transf_order[i_tr] == "Move")
+                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_polyhedron_tmp->transf_move_x)).arg(EvaluateVar(shape_polyhedron_tmp->transf_move_y)).arg(EvaluateVar(shape_polyhedron_tmp->transf_move_z)));
+                }
+                text_save_to_simscript.chop(2); //cut the last space and comma
+                text_save_to_simscript.append(QString("}"));
+            }
+            text_save_to_simscript.append(QString(");\n"));
+        }
+        else if(shapes_param_list_ptr->at(i_sh)->type == "stlfile")
+        {
+            shape_stlfile_parameters *shape_stlfile_tmp = (shape_stlfile_parameters *)(shapes_param_list_ptr->at(i_sh));
+
+            text_save_to_simscript.append(QString("CSX = ImportSTL(CSX, '%1', %2, '%3'").arg(shape_stlfile_tmp->material).arg(EvaluateVar(shape_stlfile_tmp->priority)).arg(shape_stlfile_tmp->path));
+
+            if(shape_stlfile_tmp->transf_order[0] == "Scale" || shape_stlfile_tmp->transf_order[0] == "Rotate" || shape_stlfile_tmp->transf_order[0] == "Move")
+            {
+                text_save_to_simscript.append(QString(", 'Transform',{"));
+                for(int i_tr = 0; shape_stlfile_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+                {
+                    if(shape_stlfile_tmp->transf_order[i_tr] == "Scale")
+                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_stlfile_tmp->transf_scale_x)).arg(EvaluateVar(shape_stlfile_tmp->transf_scale_y)).arg(EvaluateVar(shape_stlfile_tmp->transf_scale_z)));
+                    if(shape_stlfile_tmp->transf_order[i_tr] == "Rotate")
+                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_az)).arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_angle)));
+                    if(shape_stlfile_tmp->transf_order[i_tr] == "Move")
+                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_stlfile_tmp->transf_move_x)).arg(EvaluateVar(shape_stlfile_tmp->transf_move_y)).arg(EvaluateVar(shape_stlfile_tmp->transf_move_z)));
+                }
+                text_save_to_simscript.chop(2); //cut the last space and comma
+                text_save_to_simscript.append(QString("}"));
+            }
+            text_save_to_simscript.append(QString(");\n"));
+        }
     }
 
     text_save_to_simscript.append("##<END_OUTPUT_AUTOGENERATED_PageGeometry>##\n");
@@ -234,7 +424,7 @@ unsigned int PageGeometry::UploadShapesToViewer(bool is_new)
         {
             int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
             CSPrimitives *prim_sphere_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
-            prim_sphere = prim_sphere_tmp->ToSphericalShell();
+            prim_sphere = prim_sphere_tmp->ToSphere();
             old_prop_name = prim_sphere_tmp->GetProperty()->GetName();
         }
 
@@ -289,7 +479,7 @@ unsigned int PageGeometry::UploadShapesToViewer(bool is_new)
         {
             int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
             CSPrimitives *prim_cylinder_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
-            prim_cylinder = prim_cylinder_tmp->ToCylindricalShell();
+            prim_cylinder = prim_cylinder_tmp->ToCylinder();
             old_prop_name = prim_cylinder_tmp->GetProperty()->GetName();
         }
 
@@ -334,6 +524,211 @@ unsigned int PageGeometry::UploadShapesToViewer(bool is_new)
         prim_cylindricalshell->SetShellWidth(EvaluateVar(shape_selected->radius_outer)-EvaluateVar(shape_selected->radius_inner));
 
         prim = (CSPrimitives *)(prim_cylindricalshell);
+    }
+    else if(rad_but_type_curve->isChecked())
+    {
+        shape_curve_parameters *shape_selected = (shape_curve_parameters *)(shape_selected_general);   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+
+        CSPrimCurve *prim_curve;
+
+        if(is_new)
+        {
+            prim_curve = new CSPrimCurve(wizardsparent_tmp->clParaSet, material_property);
+        }
+        else    //if shape is to be changed, not added
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
+            CSPrimitives *prim_curve_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_curve = prim_curve_tmp->ToCurve();
+            old_prop_name = prim_curve_tmp->GetProperty()->GetName();
+        }
+
+        prim_curve->SetPriority(shape_selected->priority.toInt());
+        prim_curve->ClearPoints();
+        for(int i_pcpy = 0; i_pcpy < shape_selected->points_x.size() && i_pcpy < shape_selected->points_y.size() && i_pcpy < shape_selected->points_z.size(); ++i_pcpy)
+        {
+            double point_coord_tmp[3] = {EvaluateVar(shape_selected->points_x[i_pcpy]), EvaluateVar(shape_selected->points_y[i_pcpy]), EvaluateVar(shape_selected->points_z[i_pcpy])};
+            prim_curve->AddPoint(point_coord_tmp);
+        }
+        prim = (CSPrimitives *)(prim_curve);
+    }
+    else if(rad_but_type_wire->isChecked())
+    {
+        shape_wire_parameters *shape_selected = (shape_wire_parameters *)(shape_selected_general);   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+
+        CSPrimWire *prim_wire;
+
+        if(is_new)
+        {
+            prim_wire = new CSPrimWire(wizardsparent_tmp->clParaSet, material_property);
+        }
+        else    //if shape is to be changed, not added
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
+            CSPrimitives *prim_wire_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_wire = prim_wire_tmp->ToWire();
+            old_prop_name = prim_wire_tmp->GetProperty()->GetName();
+        }
+
+        prim_wire->SetPriority(shape_selected->priority.toInt());
+        prim_wire->SetWireRadius(EvaluateVar(shape_selected->radius));
+        prim_wire->ClearPoints();
+        for(int i_pcpy = 0; i_pcpy < shape_selected->points_x.size() && i_pcpy < shape_selected->points_y.size() && i_pcpy < shape_selected->points_z.size(); ++i_pcpy)
+        {
+            double point_coord_tmp[3] = {EvaluateVar(shape_selected->points_x[i_pcpy]), EvaluateVar(shape_selected->points_y[i_pcpy]), EvaluateVar(shape_selected->points_z[i_pcpy])};
+            prim_wire->AddPoint(point_coord_tmp);
+        }
+        prim = (CSPrimitives *)(prim_wire);
+    }
+    else if(rad_but_type_polygon->isChecked())
+    {
+        shape_polygon_parameters *shape_selected = (shape_polygon_parameters *)(shape_selected_general);   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+
+        CSPrimPolygon *prim_polygon;
+
+        if(is_new)
+        {
+            prim_polygon = new CSPrimPolygon(wizardsparent_tmp->clParaSet, material_property);
+        }
+        else    //if shape is to be changed, not added
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
+            CSPrimitives *prim_polygon_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_polygon = prim_polygon_tmp->ToPolygon();
+            old_prop_name = prim_polygon_tmp->GetProperty()->GetName();
+        }
+
+        prim_polygon->SetPriority(shape_selected->priority.toInt());
+        prim_polygon->SetNormDir(shape_selected->normal_dir.toInt());
+        prim_polygon->SetElevation(EvaluateVar(shape_selected->elevation));
+        prim_polygon->ClearCoords();
+        for(int i_pcpy = 0; i_pcpy < shape_selected->points_x.size() && i_pcpy < shape_selected->points_y.size(); ++i_pcpy)
+        {
+            prim_polygon->AddCoord(EvaluateVar(shape_selected->points_x[i_pcpy]));
+            prim_polygon->AddCoord(EvaluateVar(shape_selected->points_y[i_pcpy]));
+        }
+        prim = (CSPrimitives *)(prim_polygon);
+    }
+    else if(rad_but_type_extrudedpolygon->isChecked())
+    {
+        shape_extrudedpolygon_parameters *shape_selected = (shape_extrudedpolygon_parameters *)(shape_selected_general);   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+
+        CSPrimLinPoly *prim_extrudedpolygon;
+
+        if(is_new)
+        {
+            prim_extrudedpolygon = new CSPrimLinPoly(wizardsparent_tmp->clParaSet, material_property);
+        }
+        else    //if shape is to be changed, not added
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
+            CSPrimitives *prim_extrudedpolygon_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_extrudedpolygon = prim_extrudedpolygon_tmp->ToLinPoly();
+            old_prop_name = prim_extrudedpolygon_tmp->GetProperty()->GetName();
+        }
+
+        prim_extrudedpolygon->SetPriority(shape_selected->priority.toInt());
+        prim_extrudedpolygon->SetNormDir(shape_selected->normal_dir.toInt());
+        prim_extrudedpolygon->SetElevation(EvaluateVar(shape_selected->elevation));
+        prim_extrudedpolygon->SetLength(EvaluateVar(shape_selected->length));
+        prim_extrudedpolygon->ClearCoords();
+        for(int i_pcpy = 0; i_pcpy < shape_selected->points_x.size() && i_pcpy < shape_selected->points_y.size(); ++i_pcpy)
+        {
+            prim_extrudedpolygon->AddCoord(EvaluateVar(shape_selected->points_x[i_pcpy]));
+            prim_extrudedpolygon->AddCoord(EvaluateVar(shape_selected->points_y[i_pcpy]));
+        }
+        prim = (CSPrimitives *)(prim_extrudedpolygon);
+    }
+    else if(rad_but_type_rotationalpolygon->isChecked())
+    {
+        shape_rotationalpolygon_parameters *shape_selected = (shape_rotationalpolygon_parameters *)(shape_selected_general);   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+
+        CSPrimRotPoly *prim_rotationalpolygon;
+
+        if(is_new)
+        {
+            prim_rotationalpolygon = new CSPrimRotPoly(wizardsparent_tmp->clParaSet, material_property);
+        }
+        else    //if shape is to be changed, not added
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
+            CSPrimitives *prim_rotationalpolygon_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_rotationalpolygon = prim_rotationalpolygon_tmp->ToRotPoly();
+            old_prop_name = prim_rotationalpolygon_tmp->GetProperty()->GetName();
+        }
+
+        prim_rotationalpolygon->SetPriority(shape_selected->priority.toInt());
+        prim_rotationalpolygon->SetNormDir(shape_selected->normal_dir.toInt());
+        prim_rotationalpolygon->SetRotAxisDir(EvaluateVar(shape_selected->rot_axis_dir));
+        prim_rotationalpolygon->SetAngle(0, EvaluateVar(shape_selected->angle1));
+        prim_rotationalpolygon->SetAngle(1, EvaluateVar(shape_selected->angle2));
+        prim_rotationalpolygon->ClearCoords();
+        for(int i_pcpy = 0; i_pcpy < shape_selected->points_x.size() && i_pcpy < shape_selected->points_y.size(); ++i_pcpy)
+        {
+            prim_rotationalpolygon->AddCoord(EvaluateVar(shape_selected->points_x[i_pcpy]));
+            prim_rotationalpolygon->AddCoord(EvaluateVar(shape_selected->points_y[i_pcpy]));
+        }
+        prim = (CSPrimitives *)(prim_rotationalpolygon);
+    }
+    else if(rad_but_type_polyhedron->isChecked())
+    {
+        shape_polyhedron_parameters *shape_selected = (shape_polyhedron_parameters *)(shape_selected_general);   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+
+        CSPrimPolyhedron *prim_polyhedron;
+
+        if(is_new)
+        {
+            prim_polyhedron = new CSPrimPolyhedron(wizardsparent_tmp->clParaSet, material_property);
+        }
+        else    //if shape is to be changed, not added
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
+            CSPrimitives *prim_polyhedron_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_polyhedron = prim_polyhedron_tmp->ToPolyhedron();
+            old_prop_name = prim_polyhedron_tmp->GetProperty()->GetName();
+        }
+
+        prim_polyhedron->SetPriority(shape_selected->priority.toInt());
+        prim_polyhedron->Reset();
+        for(int i_pcpy = 0; i_pcpy < shape_selected->vertices_x.size() && i_pcpy < shape_selected->vertices_y.size() && i_pcpy < shape_selected->vertices_z.size(); ++i_pcpy)
+        {
+            int face_coord_tmp[3] = {shape_selected->faces_x[i_pcpy].toInt(), shape_selected->faces_y[i_pcpy].toInt(), shape_selected->faces_z[i_pcpy].toInt()};
+            prim_polyhedron->AddVertex(EvaluateVar(shape_selected->vertices_x[i_pcpy]), EvaluateVar(shape_selected->vertices_y[i_pcpy]), EvaluateVar(shape_selected->vertices_z[i_pcpy]));
+            prim_polyhedron->AddFace(i_pcpy, face_coord_tmp);
+        }
+        prim = (CSPrimitives *)(prim_polyhedron);
+    }
+    else if(rad_but_type_stlfile->isChecked())
+    {
+        shape_stlfile_parameters *shape_selected = (shape_stlfile_parameters *)(shape_selected_general);   //get data about the shape stored here - in the wizard
+        material_property = wizardsparent_tmp->GetPropertiesByName(shape_selected->material.toStdString()).at(0); //get proprty class from QCSXCAD according to selection in wizard (assumed only one with the name) TODO FIXME different shapes can have the same name!
+
+        CSPrimPolyhedronReader *prim_stlfile;
+
+        if(is_new)
+        {
+            prim_stlfile = new CSPrimPolyhedronReader(wizardsparent_tmp->clParaSet, material_property);
+        }
+        else    //if shape is to be changed, not added
+        {
+            int id_tmp = shapes_param_list_ptr->at(shapes_list_widget->currentRow())->id; //get id of the shape selected in the wizard, to find the corresponding object in QCSXCAD
+            CSPrimitives *prim_stlfile_tmp = wizardsparent_tmp->GetPrimitiveByID(id_tmp); //create pointer to access the object in QCSXCAD
+            prim_stlfile = prim_stlfile_tmp->ToPolyhedronReader();
+            old_prop_name = prim_stlfile_tmp->GetProperty()->GetName();
+        }
+
+        prim_stlfile->SetPriority(shape_selected->priority.toInt());
+        prim_stlfile->SetFileType(CSPrimPolyhedronReader::FileType::STL_FILE);
+        prim_stlfile->SetFilename(shape_selected->path.toStdString());
+        prim_stlfile->ReadFile();
+
+        prim = (CSPrimitives *)(prim_stlfile);
     }
 
     prim->GetTransform()->Reset();
@@ -403,9 +798,10 @@ void PageGeometry::ShapeSelectLayout(void)
     rad_but_type_curve = new QRadioButton("Curve", this);
     rad_but_type_wire = new QRadioButton("Wire", this);
     rad_but_type_polygon = new QRadioButton("Polygon", this);
-    rad_but_type_extruded_polygon = new QRadioButton("Extruded polygon", this);
-    rad_but_type_rotational_solid = new QRadioButton("Rotational Solid", this);
+    rad_but_type_extrudedpolygon = new QRadioButton("Extruded polygon", this);
+    rad_but_type_rotationalpolygon = new QRadioButton("Rotational Solid", this);
     rad_but_type_polyhedron = new QRadioButton("Polyhedron", this);
+    rad_but_type_stlfile = new QRadioButton("STL file", this);
     connect(rad_but_type_box, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
     connect(rad_but_type_sphere, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
     connect(rad_but_type_sphericalshell, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
@@ -414,9 +810,10 @@ void PageGeometry::ShapeSelectLayout(void)
     connect(rad_but_type_curve, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
     connect(rad_but_type_wire, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
     connect(rad_but_type_polygon, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
-    connect(rad_but_type_extruded_polygon, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
-    connect(rad_but_type_rotational_solid, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
+    connect(rad_but_type_extrudedpolygon, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
+    connect(rad_but_type_rotationalpolygon, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
     connect(rad_but_type_polyhedron, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
+    connect(rad_but_type_stlfile, SIGNAL(clicked()), this, SLOT(OnSetShapeTypeLayout()));
     rad_but_type_box->setChecked(true);
 
     grid_layout_select_shape->addWidget(rad_but_type_box, 0, 0, Qt::AlignLeft);
@@ -427,9 +824,10 @@ void PageGeometry::ShapeSelectLayout(void)
     grid_layout_select_shape->addWidget(rad_but_type_curve, 5, 0, Qt::AlignLeft);
     grid_layout_select_shape->addWidget(rad_but_type_wire, 6, 0, Qt::AlignLeft);
     grid_layout_select_shape->addWidget(rad_but_type_polygon, 7, 0, Qt::AlignLeft);
-    grid_layout_select_shape->addWidget(rad_but_type_extruded_polygon, 8, 0, Qt::AlignLeft);
-    grid_layout_select_shape->addWidget(rad_but_type_rotational_solid, 9, 0, Qt::AlignLeft);
+    grid_layout_select_shape->addWidget(rad_but_type_extrudedpolygon, 8, 0, Qt::AlignLeft);
+    grid_layout_select_shape->addWidget(rad_but_type_rotationalpolygon, 9, 0, Qt::AlignLeft);
     grid_layout_select_shape->addWidget(rad_but_type_polyhedron, 10, 0, Qt::AlignLeft);
+    grid_layout_select_shape->addWidget(rad_but_type_stlfile, 11, 0, Qt::AlignLeft);
 
     shape_select_groupbox->setLayout(grid_layout_select_shape);
 }
@@ -548,7 +946,7 @@ void PageGeometry::ShapeBoxSettings(void)
     groupbox_box_settings = new QGroupBox(tr("Box settings"));
     QGridLayout *grid_layout_shape_box = new QGridLayout;
 
-    QGroupBox *groupbox_box_params = new QGroupBox(tr("Box coordinates"));
+    QGroupBox *groupbox_box_params = new QGroupBox(tr("General"));
     QGridLayout *grid_layout_box_params = new QGridLayout;
     QLabel *sh_box_statictext_name = new QLabel("name", this);
     sh_box_name = new QLineEdit(this);
@@ -605,7 +1003,7 @@ void PageGeometry::ShapeSphereSettings(void)
     groupbox_sphere_settings = new QGroupBox(tr("Sphere settings"));
     QGridLayout *grid_layout_shape_sphere = new QGridLayout;
 
-    QGroupBox *groupbox_sphere_params = new QGroupBox(tr("Sphere coordinates"));
+    QGroupBox *groupbox_sphere_params = new QGroupBox(tr("General"));
     QGridLayout *grid_layout_sphere_params = new QGridLayout;
     QLabel *sh_sphere_statictext_name = new QLabel("name", this);
     sh_sphere_name = new QLineEdit(this);
@@ -658,7 +1056,7 @@ void PageGeometry::ShapeSphericalshellSettings(void)
     groupbox_sphericalshell_settings = new QGroupBox(tr("Spherical Shell settings"));
     QGridLayout *grid_layout_shape_sphericalshell = new QGridLayout;
 
-    QGroupBox *groupbox_sphericalshell_params = new QGroupBox(tr("Sphere coordinates"));
+    QGroupBox *groupbox_sphericalshell_params = new QGroupBox(tr("General"));
     QGridLayout *grid_layout_sphericalshell_params = new QGridLayout;
     QLabel *sh_sphericalshell_statictext_name = new QLabel("name", this);
     sh_sphericalshell_name = new QLineEdit(this);
@@ -715,7 +1113,7 @@ void PageGeometry::ShapeCylinderSettings(void)
     groupbox_cylinder_settings = new QGroupBox(tr("Cylinder settings"));
     QGridLayout *grid_layout_shape_cylinder = new QGridLayout;
 
-    QGroupBox *groupbox_cylinder_params = new QGroupBox(tr("Cylinder coordinates"));
+    QGroupBox *groupbox_cylinder_params = new QGroupBox(tr("General"));
     QGridLayout *grid_layout_cylinder_params = new QGridLayout;
     QLabel *sh_cylinder_statictext_name = new QLabel("name", this);
     sh_cylinder_name = new QLineEdit(this);
@@ -776,7 +1174,7 @@ void PageGeometry::ShapeCylindricalshellSettings(void)
     groupbox_cylindricalshell_settings = new QGroupBox(tr("Cylindrical Shell settings"));
     QGridLayout *grid_layout_shape_cylindricalshell = new QGridLayout;
 
-    QGroupBox *groupbox_cylindricalshell_params = new QGroupBox(tr("Cylinder coordinates"));
+    QGroupBox *groupbox_cylindricalshell_params = new QGroupBox(tr("General"));
     QGridLayout *grid_layout_cylindricalshell_params = new QGridLayout;
     QLabel *sh_cylindricalshell_statictext_name = new QLabel("name", this);
     sh_cylindricalshell_name = new QLineEdit(this);
@@ -834,6 +1232,382 @@ void PageGeometry::ShapeCylindricalshellSettings(void)
     grid_layout_shape_cylindricalshell->addWidget(sh_cylindricalshell_statictext_placeholder, 2, 0, Qt::AlignTop);
 
     groupbox_cylindricalshell_settings->setLayout(grid_layout_shape_cylindricalshell);
+}
+
+void PageGeometry::ShapeCurveSettings(void)
+{
+    groupbox_curve_settings = new QGroupBox(tr("Curve settings"));
+    QGridLayout *grid_layout_shape_curve = new QGridLayout;
+
+    QGroupBox *groupbox_curve_params = new QGroupBox(tr("General"));
+    QGridLayout *grid_layout_curve_params = new QGridLayout;
+    QLabel *sh_curve_statictext_name = new QLabel("name", this);
+    sh_curve_name = new QLineEdit(this);
+    QLabel *sh_curve_statictext_priority = new QLabel("priority", this);
+    sh_curve_priority = new QLineEdit(this);
+    QLabel *sh_curve_statictext_material = new QLabel("material", this);
+    sh_curve_material = new QComboBox(this);
+    grid_layout_curve_params->addWidget(sh_curve_statictext_name, 0, 0, Qt::AlignLeft);
+    grid_layout_curve_params->addWidget(sh_curve_statictext_priority, 1, 0, Qt::AlignLeft);
+    grid_layout_curve_params->addWidget(sh_curve_statictext_material, 2, 0, Qt::AlignLeft);
+    grid_layout_curve_params->addWidget(sh_curve_name, 0, 1, Qt::AlignLeft);
+    grid_layout_curve_params->addWidget(sh_curve_priority, 1, 1, Qt::AlignLeft);
+    grid_layout_curve_params->addWidget(sh_curve_material, 2, 1, Qt::AlignLeft);
+    groupbox_curve_params->setLayout(grid_layout_curve_params);
+    QLabel *sh_curve_statictext_placeholder = new QLabel("", this);
+
+    QGroupBox *groupbox_curve_coords = new QGroupBox(tr("Curve coordinates"));
+    QGridLayout *grid_layout_curve_coords = new QGridLayout;
+    QLabel *sh_curve_statictext_pointslist = new QLabel("list of points:", this);
+    sh_curve_pointslist = new QTableWidget(this);
+    sh_curve_pointslist->setColumnCount(3);
+    sh_curve_pointslist->setRowCount(1);
+    QStringList table_header;
+    table_header << "x" << "y" << "z";
+    sh_curve_pointslist->setHorizontalHeaderLabels(table_header);
+    sh_curve_pointslist->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    connect(sh_curve_pointslist, SIGNAL(cellChanged(int, int)), this, SLOT(OnPointslistUpdate(int, int)));
+
+    grid_layout_curve_coords->addWidget(sh_curve_statictext_pointslist, 0, 0, Qt::AlignLeft);
+    grid_layout_curve_coords->addWidget(sh_curve_pointslist, 1, 0, 5, 2, Qt::AlignLeft);
+    groupbox_curve_coords->setLayout(grid_layout_curve_coords);
+
+    connect(sh_curve_name, SIGNAL(editingFinished()), this, SLOT(OnSetShapeTypeLayout()));
+
+    grid_layout_shape_curve->addWidget(groupbox_curve_params, 0, 0, Qt::AlignTop);
+    grid_layout_shape_curve->addWidget(groupbox_curve_coords, 1, 0, Qt::AlignTop);
+    grid_layout_shape_curve->addWidget(sh_curve_statictext_placeholder, 2, 0, Qt::AlignTop);
+
+    groupbox_curve_settings->setLayout(grid_layout_shape_curve);
+}
+
+void PageGeometry::ShapeWireSettings(void)
+{
+    groupbox_wire_settings = new QGroupBox(tr("Wire settings"));
+    QGridLayout *grid_layout_shape_wire = new QGridLayout;
+
+    QGroupBox *groupbox_wire_params = new QGroupBox(tr("General"));
+    QGridLayout *grid_layout_wire_params = new QGridLayout;
+    QLabel *sh_wire_statictext_name = new QLabel("name", this);
+    sh_wire_name = new QLineEdit(this);
+    QLabel *sh_wire_statictext_priority = new QLabel("priority", this);
+    sh_wire_priority = new QLineEdit(this);
+    QLabel *sh_wire_statictext_material = new QLabel("material", this);
+    sh_wire_material = new QComboBox(this);
+    grid_layout_wire_params->addWidget(sh_wire_statictext_name, 0, 0, Qt::AlignLeft);
+    grid_layout_wire_params->addWidget(sh_wire_statictext_priority, 1, 0, Qt::AlignLeft);
+    grid_layout_wire_params->addWidget(sh_wire_statictext_material, 2, 0, Qt::AlignLeft);
+    grid_layout_wire_params->addWidget(sh_wire_name, 0, 1, Qt::AlignLeft);
+    grid_layout_wire_params->addWidget(sh_wire_priority, 1, 1, Qt::AlignLeft);
+    grid_layout_wire_params->addWidget(sh_wire_material, 2, 1, Qt::AlignLeft);
+    groupbox_wire_params->setLayout(grid_layout_wire_params);
+    QLabel *sh_wire_statictext_placeholder = new QLabel("", this);
+
+    QGroupBox *groupbox_wire_coords = new QGroupBox(tr("Wire coordinates"));
+    QGridLayout *grid_layout_wire_coords = new QGridLayout;
+    QLabel *sh_wire_statictext_radius = new QLabel("radius", this);
+    sh_wire_radius = new QLineEdit(this);
+    QLabel *sh_wire_statictext_pointslist = new QLabel("list of points:", this);
+    sh_wire_pointslist = new QTableWidget(this);
+    sh_wire_pointslist->setColumnCount(3);
+    sh_wire_pointslist->setRowCount(1);
+    QStringList table_header;
+    table_header << "x" << "y" << "z";
+    sh_wire_pointslist->setHorizontalHeaderLabels(table_header);
+    sh_wire_pointslist->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    connect(sh_wire_pointslist, SIGNAL(cellChanged(int, int)), this, SLOT(OnPointslistUpdate(int, int)));
+
+    grid_layout_wire_coords->addWidget(sh_wire_statictext_radius, 0, 0, Qt::AlignLeft);
+    grid_layout_wire_coords->addWidget(sh_wire_radius, 0, 1, Qt::AlignLeft);
+    grid_layout_wire_coords->addWidget(sh_wire_statictext_pointslist, 1, 0, Qt::AlignLeft);
+    grid_layout_wire_coords->addWidget(sh_wire_pointslist, 2, 0, 5, 2, Qt::AlignLeft);
+    groupbox_wire_coords->setLayout(grid_layout_wire_coords);
+
+    connect(sh_wire_name, SIGNAL(editingFinished()), this, SLOT(OnSetShapeTypeLayout()));
+
+    grid_layout_shape_wire->addWidget(groupbox_wire_params, 0, 0, Qt::AlignTop);
+    grid_layout_shape_wire->addWidget(groupbox_wire_coords, 1, 0, Qt::AlignTop);
+    grid_layout_shape_wire->addWidget(sh_wire_statictext_placeholder, 2, 0, Qt::AlignTop);
+
+    groupbox_wire_settings->setLayout(grid_layout_shape_wire);
+}
+
+void PageGeometry::ShapePolygonSettings(void)
+{
+    groupbox_polygon_settings = new QGroupBox(tr("Polygon settings"));
+    QGridLayout *grid_layout_shape_polygon = new QGridLayout;
+
+    QGroupBox *groupbox_polygon_params = new QGroupBox(tr("General"));
+    QGridLayout *grid_layout_polygon_params = new QGridLayout;
+    QLabel *sh_polygon_statictext_name = new QLabel("name", this);
+    sh_polygon_name = new QLineEdit(this);
+    QLabel *sh_polygon_statictext_priority = new QLabel("priority", this);
+    sh_polygon_priority = new QLineEdit(this);
+    QLabel *sh_polygon_statictext_material = new QLabel("material", this);
+    sh_polygon_material = new QComboBox(this);
+    grid_layout_polygon_params->addWidget(sh_polygon_statictext_name, 0, 0, Qt::AlignLeft);
+    grid_layout_polygon_params->addWidget(sh_polygon_statictext_priority, 1, 0, Qt::AlignLeft);
+    grid_layout_polygon_params->addWidget(sh_polygon_statictext_material, 2, 0, Qt::AlignLeft);
+    grid_layout_polygon_params->addWidget(sh_polygon_name, 0, 1, Qt::AlignLeft);
+    grid_layout_polygon_params->addWidget(sh_polygon_priority, 1, 1, Qt::AlignLeft);
+    grid_layout_polygon_params->addWidget(sh_polygon_material, 2, 1, Qt::AlignLeft);
+    groupbox_polygon_params->setLayout(grid_layout_polygon_params);
+    QLabel *sh_polygon_statictext_placeholder = new QLabel("", this);
+
+    QGroupBox *groupbox_polygon_coords = new QGroupBox(tr("Polygon coordinates"));
+    QGridLayout *grid_layout_polygon_coords = new QGridLayout;
+    QLabel *sh_polygon_statictext_norm_dir = new QLabel("normal direction", this);
+    sh_polygon_norm_dir = new QLineEdit(this);
+    QLabel *sh_polygon_statictext_elevation = new QLabel("elevation", this);
+    sh_polygon_elevation= new QLineEdit(this);
+    QLabel *sh_polygon_statictext_pointslist = new QLabel("list of points:", this);
+    sh_polygon_pointslist = new QTableWidget(this);
+    sh_polygon_pointslist->setColumnCount(2);
+    sh_polygon_pointslist->setRowCount(1);
+    QStringList table_header;
+    table_header << "x" << "y";
+    sh_polygon_pointslist->setHorizontalHeaderLabels(table_header);
+    sh_polygon_pointslist->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    connect(sh_polygon_pointslist, SIGNAL(cellChanged(int, int)), this, SLOT(OnPointslistUpdate(int, int)));
+
+    grid_layout_polygon_coords->addWidget(sh_polygon_statictext_norm_dir, 0, 0, Qt::AlignLeft);
+    grid_layout_polygon_coords->addWidget(sh_polygon_norm_dir, 0, 1, Qt::AlignLeft);
+    grid_layout_polygon_coords->addWidget(sh_polygon_statictext_elevation, 1, 0, Qt::AlignLeft);
+    grid_layout_polygon_coords->addWidget(sh_polygon_elevation, 1, 1, Qt::AlignLeft);
+    grid_layout_polygon_coords->addWidget(sh_polygon_statictext_pointslist, 2, 0, Qt::AlignLeft);
+    grid_layout_polygon_coords->addWidget(sh_polygon_pointslist, 3, 0, 5, 2, Qt::AlignLeft);
+    groupbox_polygon_coords->setLayout(grid_layout_polygon_coords);
+
+    connect(sh_polygon_name, SIGNAL(editingFinished()), this, SLOT(OnSetShapeTypeLayout()));
+
+    grid_layout_shape_polygon->addWidget(groupbox_polygon_params, 0, 0, Qt::AlignTop);
+    grid_layout_shape_polygon->addWidget(groupbox_polygon_coords, 1, 0, Qt::AlignTop);
+    grid_layout_shape_polygon->addWidget(sh_polygon_statictext_placeholder, 2, 0, Qt::AlignTop);
+
+    groupbox_polygon_settings->setLayout(grid_layout_shape_polygon);
+}
+
+void PageGeometry::ShapeExtrudedPolygonSettings()
+{
+    groupbox_extrudedpolygon_settings = new QGroupBox(tr("Extruded polygon settings"));
+    QGridLayout *grid_layout_shape_extrudedpolygon = new QGridLayout;
+
+    QGroupBox *groupbox_extrudedpolygon_params = new QGroupBox(tr("General"));
+    QGridLayout *grid_layout_extrudedpolygon_params = new QGridLayout;
+    QLabel *sh_extrudedpolygon_statictext_name = new QLabel("name", this);
+    sh_extrudedpolygon_name = new QLineEdit(this);
+    QLabel *sh_extrudedpolygon_statictext_priority = new QLabel("priority", this);
+    sh_extrudedpolygon_priority = new QLineEdit(this);
+    QLabel *sh_extrudedpolygon_statictext_material = new QLabel("material", this);
+    sh_extrudedpolygon_material = new QComboBox(this);
+    grid_layout_extrudedpolygon_params->addWidget(sh_extrudedpolygon_statictext_name, 0, 0, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_params->addWidget(sh_extrudedpolygon_statictext_priority, 1, 0, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_params->addWidget(sh_extrudedpolygon_statictext_material, 2, 0, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_params->addWidget(sh_extrudedpolygon_name, 0, 1, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_params->addWidget(sh_extrudedpolygon_priority, 1, 1, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_params->addWidget(sh_extrudedpolygon_material, 2, 1, Qt::AlignLeft);
+    groupbox_extrudedpolygon_params->setLayout(grid_layout_extrudedpolygon_params);
+    QLabel *sh_extrudedpolygon_statictext_placeholder = new QLabel("", this);
+
+    QGroupBox *groupbox_extrudedpolygon_coords = new QGroupBox(tr("Extruded polygon coordinates"));
+    QGridLayout *grid_layout_extrudedpolygon_coords = new QGridLayout;
+    QLabel *sh_extrudedpolygon_statictext_norm_dir = new QLabel("normal direction", this);
+    sh_extrudedpolygon_norm_dir = new QLineEdit(this);
+    QLabel *sh_extrudedpolygon_statictext_elevation = new QLabel("elevation", this);
+    sh_extrudedpolygon_elevation= new QLineEdit(this);
+    QLabel *sh_extrudedpolygon_statictext_length = new QLabel("length", this);
+    sh_extrudedpolygon_length= new QLineEdit(this);
+    QLabel *sh_extrudedpolygon_statictext_pointslist = new QLabel("list of points:", this);
+    sh_extrudedpolygon_pointslist = new QTableWidget(this);
+    sh_extrudedpolygon_pointslist->setColumnCount(2);
+    sh_extrudedpolygon_pointslist->setRowCount(1);
+    QStringList table_header;
+    table_header << "x" << "y";
+    sh_extrudedpolygon_pointslist->setHorizontalHeaderLabels(table_header);
+    sh_extrudedpolygon_pointslist->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    connect(sh_extrudedpolygon_pointslist, SIGNAL(cellChanged(int, int)), this, SLOT(OnPointslistUpdate(int, int)));
+
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_statictext_norm_dir, 0, 0, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_norm_dir, 0, 1, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_statictext_elevation, 1, 0, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_elevation, 1, 1, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_statictext_length, 2, 0, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_length, 2, 1, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_statictext_pointslist, 3, 0, Qt::AlignLeft);
+    grid_layout_extrudedpolygon_coords->addWidget(sh_extrudedpolygon_pointslist, 4, 0, 5, 2, Qt::AlignLeft);
+    groupbox_extrudedpolygon_coords->setLayout(grid_layout_extrudedpolygon_coords);
+
+    connect(sh_extrudedpolygon_name, SIGNAL(editingFinished()), this, SLOT(OnSetShapeTypeLayout()));
+
+    grid_layout_shape_extrudedpolygon->addWidget(groupbox_extrudedpolygon_params, 0, 0, Qt::AlignTop);
+    grid_layout_shape_extrudedpolygon->addWidget(groupbox_extrudedpolygon_coords, 1, 0, Qt::AlignTop);
+    grid_layout_shape_extrudedpolygon->addWidget(sh_extrudedpolygon_statictext_placeholder, 2, 0, Qt::AlignTop);
+
+    groupbox_extrudedpolygon_settings->setLayout(grid_layout_shape_extrudedpolygon);
+}
+
+void PageGeometry::ShapeRotationalPolygonSettings(void)
+{
+    groupbox_rotationalpolygon_settings = new QGroupBox(tr("Rotational polygon settings"));
+    QGridLayout *grid_layout_shape_rotationalpolygon = new QGridLayout;
+
+    QGroupBox *groupbox_rotationalpolygon_params = new QGroupBox(tr("General"));
+    QGridLayout *grid_layout_rotationalpolygon_params = new QGridLayout;
+    QLabel *sh_rotationalpolygon_statictext_name = new QLabel("name", this);
+    sh_rotationalpolygon_name = new QLineEdit(this);
+    QLabel *sh_rotationalpolygon_statictext_priority = new QLabel("priority", this);
+    sh_rotationalpolygon_priority = new QLineEdit(this);
+    QLabel *sh_rotationalpolygon_statictext_material = new QLabel("material", this);
+    sh_rotationalpolygon_material = new QComboBox(this);
+    grid_layout_rotationalpolygon_params->addWidget(sh_rotationalpolygon_statictext_name, 0, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_params->addWidget(sh_rotationalpolygon_statictext_priority, 1, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_params->addWidget(sh_rotationalpolygon_statictext_material, 2, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_params->addWidget(sh_rotationalpolygon_name, 0, 1, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_params->addWidget(sh_rotationalpolygon_priority, 1, 1, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_params->addWidget(sh_rotationalpolygon_material, 2, 1, Qt::AlignLeft);
+    groupbox_rotationalpolygon_params->setLayout(grid_layout_rotationalpolygon_params);
+    QLabel *sh_rotationalpolygon_statictext_placeholder = new QLabel("", this);
+
+    QGroupBox *groupbox_rotationalpolygon_coords = new QGroupBox(tr("Rotational polygon coordinates"));
+    QGridLayout *grid_layout_rotationalpolygon_coords = new QGridLayout;
+    QLabel *sh_rotationalpolygon_statictext_norm_dir = new QLabel("normal direction", this);
+    sh_rotationalpolygon_norm_dir = new QLineEdit(this);
+    QLabel *sh_rotationalpolygon_statictext_rot_axis = new QLabel("rotation axis", this);
+    sh_rotationalpolygon_rot_axis = new QLineEdit(this);
+    QLabel *sh_rotationalpolygon_statictext_angle1 = new QLabel("angle start", this);
+    sh_rotationalpolygon_angle1 = new QLineEdit(this);
+    QLabel *sh_rotationalpolygon_statictext_angle2 = new QLabel("angle end", this);
+    sh_rotationalpolygon_angle2 = new QLineEdit(this);
+    QLabel *sh_rotationalpolygon_statictext_pointslist = new QLabel("list of points:", this);
+    sh_rotationalpolygon_pointslist = new QTableWidget(this);
+    sh_rotationalpolygon_pointslist->setColumnCount(2);
+    sh_rotationalpolygon_pointslist->setRowCount(1);
+    QStringList table_header;
+    table_header << "x" << "y";
+    sh_rotationalpolygon_pointslist->setHorizontalHeaderLabels(table_header);
+    sh_rotationalpolygon_pointslist->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    connect(sh_rotationalpolygon_pointslist, SIGNAL(cellChanged(int, int)), this, SLOT(OnPointslistUpdate(int, int)));
+
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_statictext_norm_dir, 0, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_norm_dir, 0, 1, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_statictext_rot_axis, 1, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_rot_axis, 1, 1, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_statictext_angle1, 2, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_angle1, 2, 1, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_statictext_angle2, 3, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_angle2, 3, 1, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_statictext_pointslist, 4, 0, Qt::AlignLeft);
+    grid_layout_rotationalpolygon_coords->addWidget(sh_rotationalpolygon_pointslist, 5, 0, 4, 2, Qt::AlignLeft);
+    groupbox_rotationalpolygon_coords->setLayout(grid_layout_rotationalpolygon_coords);
+
+    connect(sh_rotationalpolygon_name, SIGNAL(editingFinished()), this, SLOT(OnSetShapeTypeLayout()));
+
+    grid_layout_shape_rotationalpolygon->addWidget(groupbox_rotationalpolygon_params, 0, 0, Qt::AlignTop);
+    grid_layout_shape_rotationalpolygon->addWidget(groupbox_rotationalpolygon_coords, 1, 0, Qt::AlignTop);
+    grid_layout_shape_rotationalpolygon->addWidget(sh_rotationalpolygon_statictext_placeholder, 2, 0, Qt::AlignTop);
+
+    groupbox_rotationalpolygon_settings->setLayout(grid_layout_shape_rotationalpolygon);
+}
+
+void PageGeometry::ShapePolyhedronSettings()
+{
+    groupbox_polyhedron_settings = new QGroupBox(tr("Polyhedron settings"));
+    QGridLayout *grid_layout_shape_polyhedron = new QGridLayout;
+
+    QGroupBox *groupbox_polyhedron_params = new QGroupBox(tr("General"));
+    QGridLayout *grid_layout_polyhedron_params = new QGridLayout;
+    QLabel *sh_polyhedron_statictext_name = new QLabel("name", this);
+    sh_polyhedron_name = new QLineEdit(this);
+    QLabel *sh_polyhedron_statictext_priority = new QLabel("priority", this);
+    sh_polyhedron_priority = new QLineEdit(this);
+    QLabel *sh_polyhedron_statictext_material = new QLabel("material", this);
+    sh_polyhedron_material = new QComboBox(this);
+    grid_layout_polyhedron_params->addWidget(sh_polyhedron_statictext_name, 0, 0, Qt::AlignLeft);
+    grid_layout_polyhedron_params->addWidget(sh_polyhedron_statictext_priority, 1, 0, Qt::AlignLeft);
+    grid_layout_polyhedron_params->addWidget(sh_polyhedron_statictext_material, 2, 0, Qt::AlignLeft);
+    grid_layout_polyhedron_params->addWidget(sh_polyhedron_name, 0, 1, Qt::AlignLeft);
+    grid_layout_polyhedron_params->addWidget(sh_polyhedron_priority, 1, 1, Qt::AlignLeft);
+    grid_layout_polyhedron_params->addWidget(sh_polyhedron_material, 2, 1, Qt::AlignLeft);
+    groupbox_polyhedron_params->setLayout(grid_layout_polyhedron_params);
+    QLabel *sh_polyhedron_statictext_placeholder = new QLabel("", this);
+
+    QGroupBox *groupbox_polyhedron_coords = new QGroupBox(tr("Polyhedron coordinates"));
+    QGridLayout *grid_layout_polyhedron_coords = new QGridLayout;
+
+    QLabel *sh_polyhedron_statictext_verticeslist = new QLabel("list of vertices:", this);
+    sh_polyhedron_verticeslist = new QTableWidget(this);
+    sh_polyhedron_verticeslist->setColumnCount(3);
+    sh_polyhedron_verticeslist->setRowCount(1);
+    QStringList table_vertices_header;
+    table_vertices_header << "x" << "y" << "z";
+    sh_polyhedron_verticeslist->setHorizontalHeaderLabels(table_vertices_header);
+    sh_polyhedron_verticeslist->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    connect(sh_polyhedron_verticeslist, SIGNAL(cellChanged(int, int)), this, SLOT(OnPointslistUpdate(int, int)));
+
+    QLabel *sh_polyhedron_statictext_faceslist = new QLabel("list of faces:", this);
+    sh_polyhedron_faceslist = new QTableWidget(this);
+    sh_polyhedron_faceslist->setColumnCount(3);
+    sh_polyhedron_faceslist->setRowCount(1);
+    QStringList table_faces_header;
+    table_faces_header << "x" << "y" << "z";
+    sh_polyhedron_faceslist->setHorizontalHeaderLabels(table_faces_header);
+    sh_polyhedron_faceslist->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    connect(sh_polyhedron_faceslist, SIGNAL(cellChanged(int, int)), this, SLOT(OnPointslistUpdate(int, int)));
+
+
+    grid_layout_polyhedron_coords->addWidget(sh_polyhedron_statictext_verticeslist, 3, 0, Qt::AlignLeft);
+    grid_layout_polyhedron_coords->addWidget(sh_polyhedron_verticeslist, 4, 0, 2, 2, Qt::AlignLeft);
+    grid_layout_polyhedron_coords->addWidget(sh_polyhedron_statictext_faceslist, 6, 0, Qt::AlignLeft);
+    grid_layout_polyhedron_coords->addWidget(sh_polyhedron_faceslist, 7, 0, 9, 2, Qt::AlignLeft);
+    groupbox_polyhedron_coords->setLayout(grid_layout_polyhedron_coords);
+
+    connect(sh_polyhedron_name, SIGNAL(editingFinished()), this, SLOT(OnSetShapeTypeLayout()));
+
+    grid_layout_shape_polyhedron->addWidget(groupbox_polyhedron_params, 0, 0, Qt::AlignTop);
+    grid_layout_shape_polyhedron->addWidget(groupbox_polyhedron_coords, 1, 0, Qt::AlignTop);
+    grid_layout_shape_polyhedron->addWidget(sh_polyhedron_statictext_placeholder, 2, 0, Qt::AlignTop);
+
+    groupbox_polyhedron_settings->setLayout(grid_layout_shape_polyhedron);
+}
+
+void PageGeometry::ShapeSTLfileSettings()
+{
+    groupbox_stlfile_settings = new QGroupBox(tr("STL file settings"));
+    QGridLayout *grid_layout_shape_stlfile = new QGridLayout;
+
+    QGroupBox *groupbox_stlfile_params = new QGroupBox(tr("General"));
+    QGridLayout *grid_layout_stlfile_params = new QGridLayout;
+    QLabel *sh_stlfile_statictext_name = new QLabel("name", this);
+    sh_stlfile_name = new QLineEdit(this);
+    QLabel *sh_stlfile_statictext_priority = new QLabel("priority", this);
+    sh_stlfile_priority = new QLineEdit(this);
+    QLabel *sh_stlfile_statictext_material = new QLabel("material", this);
+    sh_stlfile_material = new QComboBox(this);
+    grid_layout_stlfile_params->addWidget(sh_stlfile_statictext_name, 0, 0, Qt::AlignLeft);
+    grid_layout_stlfile_params->addWidget(sh_stlfile_statictext_priority, 1, 0, Qt::AlignLeft);
+    grid_layout_stlfile_params->addWidget(sh_stlfile_statictext_material, 2, 0, Qt::AlignLeft);
+    grid_layout_stlfile_params->addWidget(sh_stlfile_name, 0, 1, Qt::AlignLeft);
+    grid_layout_stlfile_params->addWidget(sh_stlfile_priority, 1, 1, Qt::AlignLeft);
+    grid_layout_stlfile_params->addWidget(sh_stlfile_material, 2, 1, Qt::AlignLeft);
+    groupbox_stlfile_params->setLayout(grid_layout_stlfile_params);
+    QLabel *sh_stlfile_statictext_placeholder = new QLabel("", this);
+
+    QGroupBox *groupbox_stlfile_coords = new QGroupBox(tr("STL file path"));
+    QGridLayout *grid_layout_stlfile_coords = new QGridLayout;
+    QLabel *sh_stlfile_statictext_path = new QLabel("file path", this);
+    sh_stlfile_path = new QLineEdit(this);
+
+    grid_layout_stlfile_coords->addWidget(sh_stlfile_statictext_path, 0, 0, Qt::AlignLeft);
+    grid_layout_stlfile_coords->addWidget(sh_stlfile_path, 0, 1, Qt::AlignLeft);
+    groupbox_stlfile_coords->setLayout(grid_layout_stlfile_coords);
+
+    connect(sh_stlfile_name, SIGNAL(editingFinished()), this, SLOT(OnSetShapeTypeLayout()));
+
+    grid_layout_shape_stlfile->addWidget(groupbox_stlfile_params, 0, 0, Qt::AlignTop);
+    grid_layout_shape_stlfile->addWidget(groupbox_stlfile_coords, 1, 0, Qt::AlignTop);
+    grid_layout_shape_stlfile->addWidget(sh_stlfile_statictext_placeholder, 2, 0, Qt::AlignTop);
+
+    groupbox_stlfile_settings->setLayout(grid_layout_shape_stlfile);
 }
 
 
@@ -1000,6 +1774,255 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         }
         shape_ptr = shape_tmp_ptr;
     }
+    else if(rad_but_type_curve->isChecked())
+    {
+        shape_curve_parameters *shape_tmp_ptr = new shape_curve_parameters;
+        shape_tmp_ptr->name = sh_curve_name->text();
+        shape_tmp_ptr->type = "curve";
+        shape_tmp_ptr->priority = sh_curve_priority->text();
+        shape_tmp_ptr->points_x.clear();
+        shape_tmp_ptr->points_y.clear();
+        shape_tmp_ptr->points_z.clear();
+        for(int i_pcpy = 0; sh_curve_pointslist->item(i_pcpy, 0) != NULL && sh_curve_pointslist->item(i_pcpy, 1) != NULL && sh_curve_pointslist->item(i_pcpy, 2) != NULL; ++i_pcpy)
+        {
+            shape_tmp_ptr->points_x.push_back(sh_curve_pointslist->item(i_pcpy, 0)->text());
+            shape_tmp_ptr->points_y.push_back(sh_curve_pointslist->item(i_pcpy, 1)->text());
+            shape_tmp_ptr->points_z.push_back(sh_curve_pointslist->item(i_pcpy, 2)->text());
+        }
+        shape_tmp_ptr->material = sh_curve_material->currentText();
+        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
+        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
+        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
+        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
+        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
+        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
+        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
+        shape_tmp_ptr->transf_move_x = transf_move_x->text();
+        shape_tmp_ptr->transf_move_y = transf_move_y->text();
+        shape_tmp_ptr->transf_move_z = transf_move_z->text();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(i_tr < transforms_list_widget->count())
+                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+            else
+                shape_tmp_ptr->transf_order[i_tr] = "";
+        }
+        shape_ptr = shape_tmp_ptr;
+    }
+    else if(rad_but_type_wire->isChecked())
+    {
+        shape_wire_parameters *shape_tmp_ptr = new shape_wire_parameters;
+        shape_tmp_ptr->name = sh_wire_name->text();
+        shape_tmp_ptr->type = "wire";
+        shape_tmp_ptr->priority = sh_wire_priority->text();
+        shape_tmp_ptr->radius = sh_wire_radius->text();
+        shape_tmp_ptr->points_x.clear();
+        shape_tmp_ptr->points_y.clear();
+        shape_tmp_ptr->points_z.clear();
+        for(int i_pcpy = 0; sh_wire_pointslist->item(i_pcpy, 0) != NULL && sh_wire_pointslist->item(i_pcpy, 1) != NULL && sh_wire_pointslist->item(i_pcpy, 2) != NULL; ++i_pcpy)
+        {
+            shape_tmp_ptr->points_x.push_back(sh_wire_pointslist->item(i_pcpy, 0)->text());
+            shape_tmp_ptr->points_y.push_back(sh_wire_pointslist->item(i_pcpy, 1)->text());
+            shape_tmp_ptr->points_z.push_back(sh_wire_pointslist->item(i_pcpy, 2)->text());
+        }
+        shape_tmp_ptr->material = sh_wire_material->currentText();
+        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
+        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
+        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
+        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
+        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
+        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
+        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
+        shape_tmp_ptr->transf_move_x = transf_move_x->text();
+        shape_tmp_ptr->transf_move_y = transf_move_y->text();
+        shape_tmp_ptr->transf_move_z = transf_move_z->text();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(i_tr < transforms_list_widget->count())
+                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+            else
+                shape_tmp_ptr->transf_order[i_tr] = "";
+        }
+        shape_ptr = shape_tmp_ptr;
+    }
+    else if(rad_but_type_polygon->isChecked())
+    {
+        shape_polygon_parameters *shape_tmp_ptr = new shape_polygon_parameters;
+        shape_tmp_ptr->name = sh_polygon_name->text();
+        shape_tmp_ptr->type = "polygon";
+        shape_tmp_ptr->priority = sh_polygon_priority->text();
+        shape_tmp_ptr->normal_dir = sh_polygon_norm_dir->text();
+        shape_tmp_ptr->elevation = sh_polygon_elevation->text();
+        shape_tmp_ptr->points_x.clear();
+        shape_tmp_ptr->points_y.clear();
+        for(int i_pcpy = 0; sh_polygon_pointslist->item(i_pcpy, 0) != NULL && sh_polygon_pointslist->item(i_pcpy, 1) != NULL; ++i_pcpy)
+        {
+            shape_tmp_ptr->points_x.push_back(sh_polygon_pointslist->item(i_pcpy, 0)->text());
+            shape_tmp_ptr->points_y.push_back(sh_polygon_pointslist->item(i_pcpy, 1)->text());
+        }
+        shape_tmp_ptr->material = sh_polygon_material->currentText();
+        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
+        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
+        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
+        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
+        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
+        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
+        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
+        shape_tmp_ptr->transf_move_x = transf_move_x->text();
+        shape_tmp_ptr->transf_move_y = transf_move_y->text();
+        shape_tmp_ptr->transf_move_z = transf_move_z->text();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(i_tr < transforms_list_widget->count())
+                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+            else
+                shape_tmp_ptr->transf_order[i_tr] = "";
+        }
+        shape_ptr = shape_tmp_ptr;
+    }
+    else if(rad_but_type_extrudedpolygon->isChecked())
+    {
+        shape_extrudedpolygon_parameters *shape_tmp_ptr = new shape_extrudedpolygon_parameters;
+        shape_tmp_ptr->name = sh_extrudedpolygon_name->text();
+        shape_tmp_ptr->type = "extrudedpolygon";
+        shape_tmp_ptr->priority = sh_extrudedpolygon_priority->text();
+        shape_tmp_ptr->normal_dir = sh_extrudedpolygon_norm_dir->text();
+        shape_tmp_ptr->elevation = sh_extrudedpolygon_elevation->text();
+        shape_tmp_ptr->length = sh_extrudedpolygon_length->text();
+        shape_tmp_ptr->points_x.clear();
+        shape_tmp_ptr->points_y.clear();
+        for(int i_pcpy = 0; sh_extrudedpolygon_pointslist->item(i_pcpy, 0) != NULL && sh_extrudedpolygon_pointslist->item(i_pcpy, 1) != NULL; ++i_pcpy)
+        {
+            shape_tmp_ptr->points_x.push_back(sh_extrudedpolygon_pointslist->item(i_pcpy, 0)->text());
+            shape_tmp_ptr->points_y.push_back(sh_extrudedpolygon_pointslist->item(i_pcpy, 1)->text());
+        }
+        shape_tmp_ptr->material = sh_extrudedpolygon_material->currentText();
+        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
+        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
+        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
+        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
+        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
+        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
+        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
+        shape_tmp_ptr->transf_move_x = transf_move_x->text();
+        shape_tmp_ptr->transf_move_y = transf_move_y->text();
+        shape_tmp_ptr->transf_move_z = transf_move_z->text();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(i_tr < transforms_list_widget->count())
+                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+            else
+                shape_tmp_ptr->transf_order[i_tr] = "";
+        }
+        shape_ptr = shape_tmp_ptr;
+    }
+    else if(rad_but_type_rotationalpolygon->isChecked())
+    {
+        shape_rotationalpolygon_parameters *shape_tmp_ptr = new shape_rotationalpolygon_parameters;
+        shape_tmp_ptr->name = sh_rotationalpolygon_name->text();
+        shape_tmp_ptr->type = "rotationalpolygon";
+        shape_tmp_ptr->priority = sh_rotationalpolygon_priority->text();
+        shape_tmp_ptr->normal_dir = sh_rotationalpolygon_norm_dir->text();
+        shape_tmp_ptr->rot_axis_dir = sh_rotationalpolygon_rot_axis->text();
+        shape_tmp_ptr->angle1 = sh_rotationalpolygon_angle1->text();
+        shape_tmp_ptr->angle2 = sh_rotationalpolygon_angle2->text();
+        shape_tmp_ptr->points_x.clear();
+        shape_tmp_ptr->points_y.clear();
+        for(int i_pcpy = 0; sh_rotationalpolygon_pointslist->item(i_pcpy, 0) != NULL && sh_rotationalpolygon_pointslist->item(i_pcpy, 1) != NULL; ++i_pcpy)
+        {
+            shape_tmp_ptr->points_x.push_back(sh_rotationalpolygon_pointslist->item(i_pcpy, 0)->text());
+            shape_tmp_ptr->points_y.push_back(sh_rotationalpolygon_pointslist->item(i_pcpy, 1)->text());
+        }
+        shape_tmp_ptr->material = sh_rotationalpolygon_material->currentText();
+        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
+        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
+        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
+        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
+        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
+        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
+        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
+        shape_tmp_ptr->transf_move_x = transf_move_x->text();
+        shape_tmp_ptr->transf_move_y = transf_move_y->text();
+        shape_tmp_ptr->transf_move_z = transf_move_z->text();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(i_tr < transforms_list_widget->count())
+                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+            else
+                shape_tmp_ptr->transf_order[i_tr] = "";
+        }
+        shape_ptr = shape_tmp_ptr;
+    }
+    else if(rad_but_type_polyhedron->isChecked())
+    {
+        shape_polyhedron_parameters *shape_tmp_ptr = new shape_polyhedron_parameters;
+        shape_tmp_ptr->name = sh_polyhedron_name->text();
+        shape_tmp_ptr->type = "polyhedron";
+        shape_tmp_ptr->priority = sh_polyhedron_priority->text();
+        shape_tmp_ptr->vertices_x.clear();
+        shape_tmp_ptr->vertices_y.clear();
+        shape_tmp_ptr->vertices_z.clear();
+        shape_tmp_ptr->faces_x.clear();
+        shape_tmp_ptr->faces_y.clear();
+        shape_tmp_ptr->faces_z.clear();
+        for(int i_pcpy = 0; sh_polyhedron_verticeslist->item(i_pcpy, 0) != NULL && sh_polyhedron_verticeslist->item(i_pcpy, 1) != NULL && sh_polyhedron_verticeslist->item(i_pcpy, 2) != NULL; ++i_pcpy)
+        {
+            shape_tmp_ptr->vertices_x.push_back(sh_polyhedron_verticeslist->item(i_pcpy, 0)->text());
+            shape_tmp_ptr->vertices_y.push_back(sh_polyhedron_verticeslist->item(i_pcpy, 1)->text());
+            shape_tmp_ptr->vertices_z.push_back(sh_polyhedron_verticeslist->item(i_pcpy, 2)->text());
+            shape_tmp_ptr->faces_x.push_back(sh_polyhedron_faceslist->item(i_pcpy, 0)->text());
+            shape_tmp_ptr->faces_y.push_back(sh_polyhedron_faceslist->item(i_pcpy, 1)->text());
+            shape_tmp_ptr->faces_z.push_back(sh_polyhedron_faceslist->item(i_pcpy, 2)->text());
+        }
+        shape_tmp_ptr->material = sh_polyhedron_material->currentText();
+        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
+        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
+        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
+        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
+        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
+        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
+        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
+        shape_tmp_ptr->transf_move_x = transf_move_x->text();
+        shape_tmp_ptr->transf_move_y = transf_move_y->text();
+        shape_tmp_ptr->transf_move_z = transf_move_z->text();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(i_tr < transforms_list_widget->count())
+                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+            else
+                shape_tmp_ptr->transf_order[i_tr] = "";
+        }
+        shape_ptr = shape_tmp_ptr;
+    }
+    else if(rad_but_type_stlfile->isChecked())
+    {
+        shape_stlfile_parameters *shape_tmp_ptr = new shape_stlfile_parameters;
+        shape_tmp_ptr->name = sh_stlfile_name->text();
+        shape_tmp_ptr->type = "stlfile";
+        shape_tmp_ptr->priority = sh_stlfile_priority->text();
+        shape_tmp_ptr->path = sh_stlfile_path->text();
+        shape_tmp_ptr->material = sh_stlfile_material->currentText();
+
+        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
+        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
+        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
+        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
+        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
+        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
+        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
+        shape_tmp_ptr->transf_move_x = transf_move_x->text();
+        shape_tmp_ptr->transf_move_y = transf_move_y->text();
+        shape_tmp_ptr->transf_move_z = transf_move_z->text();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(i_tr < transforms_list_widget->count())
+                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+            else
+                shape_tmp_ptr->transf_order[i_tr] = "";
+        }
+        shape_ptr = shape_tmp_ptr;
+    }
+
 
     // Add the configured above primitive to the lists in the wizard and in the QCSXCAD:
     if(!shape_ptr->name.isEmpty())
@@ -1242,6 +2265,334 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
                 button_transform_rotate->hide();
         }
     }
+    else if(!QString::compare(shape_tmp_ptr->type, "curve"))
+    {
+        shape_curve_parameters *shape_curve_tmp = (shape_curve_parameters *)(shape_tmp_ptr);
+        rad_but_type_curve->setChecked(true);
+        sh_curve_name->setText(shape_curve_tmp->name);
+        sh_curve_priority->setText(shape_curve_tmp->priority);
+        sh_curve_pointslist->clear();
+        for(int i_pcpy = 0; i_pcpy < shape_curve_tmp->points_x.size() && i_pcpy < shape_curve_tmp->points_y.size() && i_pcpy < shape_curve_tmp->points_z.size(); ++i_pcpy)
+        {
+            QTableWidgetItem *item_x = new QTableWidgetItem;
+            QTableWidgetItem *item_y = new QTableWidgetItem;
+            QTableWidgetItem *item_z = new QTableWidgetItem;
+            item_x->setText(shape_curve_tmp->points_x.at(i_pcpy));
+            item_y->setText(shape_curve_tmp->points_y.at(i_pcpy));
+            item_z->setText(shape_curve_tmp->points_z.at(i_pcpy));
+            sh_curve_pointslist->setItem(i_pcpy, 0, item_x);
+            sh_curve_pointslist->setItem(i_pcpy, 1, item_y);
+            sh_curve_pointslist->setItem(i_pcpy, 2, item_z);
+        }
+        sh_curve_material->setCurrentIndex(sh_curve_material->findText(shape_curve_tmp->material));
+        stackedLayout->setCurrentIndex(1);
+        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+        transforms_list_widget->clear();
+        button_transform_move->show();
+        button_transform_scale->show();
+        button_transform_rotate->show();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(shape_tmp_ptr->transf_order[i_tr] != "")
+                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+                button_transform_move->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+                button_transform_scale->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+                button_transform_rotate->hide();
+        }
+    }
+    else if(!QString::compare(shape_tmp_ptr->type, "wire"))
+    {
+        shape_wire_parameters *shape_wire_tmp = (shape_wire_parameters *)(shape_tmp_ptr);
+        rad_but_type_wire->setChecked(true);
+        sh_wire_name->setText(shape_wire_tmp->name);
+        sh_wire_priority->setText(shape_wire_tmp->priority);
+        sh_wire_radius->setText(shape_wire_tmp->radius);
+        sh_wire_pointslist->clear();
+        for(int i_pcpy = 0; i_pcpy < shape_wire_tmp->points_x.size() && i_pcpy < shape_wire_tmp->points_y.size() && i_pcpy < shape_wire_tmp->points_z.size(); ++i_pcpy)
+        {
+            QTableWidgetItem *item_x = new QTableWidgetItem;
+            QTableWidgetItem *item_y = new QTableWidgetItem;
+            QTableWidgetItem *item_z = new QTableWidgetItem;
+            item_x->setText(shape_wire_tmp->points_x.at(i_pcpy));
+            item_y->setText(shape_wire_tmp->points_y.at(i_pcpy));
+            item_z->setText(shape_wire_tmp->points_z.at(i_pcpy));
+            sh_wire_pointslist->setItem(i_pcpy, 0, item_x);
+            sh_wire_pointslist->setItem(i_pcpy, 1, item_y);
+            sh_wire_pointslist->setItem(i_pcpy, 2, item_z);
+        }
+        sh_wire_material->setCurrentIndex(sh_wire_material->findText(shape_wire_tmp->material));
+        stackedLayout->setCurrentIndex(1);
+        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+        transforms_list_widget->clear();
+        button_transform_move->show();
+        button_transform_scale->show();
+        button_transform_rotate->show();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(shape_tmp_ptr->transf_order[i_tr] != "")
+                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+                button_transform_move->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+                button_transform_scale->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+                button_transform_rotate->hide();
+        }
+    }
+    else if(!QString::compare(shape_tmp_ptr->type, "polygon"))
+    {
+        shape_polygon_parameters *shape_polygon_tmp = (shape_polygon_parameters *)(shape_tmp_ptr);
+        rad_but_type_polygon->setChecked(true);
+        sh_polygon_name->setText(shape_polygon_tmp->name);
+        sh_polygon_priority->setText(shape_polygon_tmp->priority);
+        sh_polygon_norm_dir->setText(shape_polygon_tmp->normal_dir);
+        sh_polygon_elevation->setText(shape_polygon_tmp->elevation);
+        sh_polygon_pointslist->clear();
+        for(int i_pcpy = 0; i_pcpy < shape_polygon_tmp->points_x.size() && i_pcpy < shape_polygon_tmp->points_y.size(); ++i_pcpy)
+        {
+            QTableWidgetItem *item_x = new QTableWidgetItem;
+            QTableWidgetItem *item_y = new QTableWidgetItem;
+            item_x->setText(shape_polygon_tmp->points_x.at(i_pcpy));
+            item_y->setText(shape_polygon_tmp->points_y.at(i_pcpy));
+            sh_polygon_pointslist->setItem(i_pcpy, 0, item_x);
+            sh_polygon_pointslist->setItem(i_pcpy, 1, item_y);
+        }
+        sh_polygon_material->setCurrentIndex(sh_polygon_material->findText(shape_polygon_tmp->material));
+        stackedLayout->setCurrentIndex(1);
+        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+        transforms_list_widget->clear();
+        button_transform_move->show();
+        button_transform_scale->show();
+        button_transform_rotate->show();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(shape_tmp_ptr->transf_order[i_tr] != "")
+                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+                button_transform_move->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+                button_transform_scale->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+                button_transform_rotate->hide();
+        }
+    }
+    else if(!QString::compare(shape_tmp_ptr->type, "extrudedpolygon"))
+    {
+        shape_extrudedpolygon_parameters *shape_extrudedpolygon_tmp = (shape_extrudedpolygon_parameters *)(shape_tmp_ptr);
+        rad_but_type_extrudedpolygon->setChecked(true);
+        sh_extrudedpolygon_name->setText(shape_extrudedpolygon_tmp->name);
+        sh_extrudedpolygon_priority->setText(shape_extrudedpolygon_tmp->priority);
+        sh_extrudedpolygon_norm_dir->setText(shape_extrudedpolygon_tmp->normal_dir);
+        sh_extrudedpolygon_elevation->setText(shape_extrudedpolygon_tmp->elevation);
+        sh_extrudedpolygon_length->setText(shape_extrudedpolygon_tmp->length);
+        sh_extrudedpolygon_pointslist->clear();
+        for(int i_pcpy = 0; i_pcpy < shape_extrudedpolygon_tmp->points_x.size() && i_pcpy < shape_extrudedpolygon_tmp->points_y.size(); ++i_pcpy)
+        {
+            QTableWidgetItem *item_x = new QTableWidgetItem;
+            QTableWidgetItem *item_y = new QTableWidgetItem;
+            item_x->setText(shape_extrudedpolygon_tmp->points_x.at(i_pcpy));
+            item_y->setText(shape_extrudedpolygon_tmp->points_y.at(i_pcpy));
+            sh_extrudedpolygon_pointslist->setItem(i_pcpy, 0, item_x);
+            sh_extrudedpolygon_pointslist->setItem(i_pcpy, 1, item_y);
+        }
+        sh_extrudedpolygon_material->setCurrentIndex(sh_extrudedpolygon_material->findText(shape_extrudedpolygon_tmp->material));
+        stackedLayout->setCurrentIndex(1);
+        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+        transforms_list_widget->clear();
+        button_transform_move->show();
+        button_transform_scale->show();
+        button_transform_rotate->show();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(shape_tmp_ptr->transf_order[i_tr] != "")
+                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+                button_transform_move->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+                button_transform_scale->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+                button_transform_rotate->hide();
+        }
+    }
+    else if(!QString::compare(shape_tmp_ptr->type, "rotationalpolygon"))
+    {
+        shape_rotationalpolygon_parameters *shape_rotationalpolygon_tmp = (shape_rotationalpolygon_parameters *)(shape_tmp_ptr);
+        rad_but_type_rotationalpolygon->setChecked(true);
+        sh_rotationalpolygon_name->setText(shape_rotationalpolygon_tmp->name);
+        sh_rotationalpolygon_priority->setText(shape_rotationalpolygon_tmp->priority);
+        sh_rotationalpolygon_norm_dir->setText(shape_rotationalpolygon_tmp->normal_dir);
+        sh_rotationalpolygon_rot_axis->setText(shape_rotationalpolygon_tmp->rot_axis_dir);
+        sh_rotationalpolygon_angle1->setText(shape_rotationalpolygon_tmp->angle1);
+        sh_rotationalpolygon_angle2->setText(shape_rotationalpolygon_tmp->angle2);
+        sh_rotationalpolygon_pointslist->clear();
+        for(int i_pcpy = 0; i_pcpy < shape_rotationalpolygon_tmp->points_x.size() && i_pcpy < shape_rotationalpolygon_tmp->points_y.size(); ++i_pcpy)
+        {
+            QTableWidgetItem *item_x = new QTableWidgetItem;
+            QTableWidgetItem *item_y = new QTableWidgetItem;
+            item_x->setText(shape_rotationalpolygon_tmp->points_x.at(i_pcpy));
+            item_y->setText(shape_rotationalpolygon_tmp->points_y.at(i_pcpy));
+            sh_rotationalpolygon_pointslist->setItem(i_pcpy, 0, item_x);
+            sh_rotationalpolygon_pointslist->setItem(i_pcpy, 1, item_y);
+        }
+        sh_rotationalpolygon_material->setCurrentIndex(sh_rotationalpolygon_material->findText(shape_rotationalpolygon_tmp->material));
+        stackedLayout->setCurrentIndex(1);
+        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+        transforms_list_widget->clear();
+        button_transform_move->show();
+        button_transform_scale->show();
+        button_transform_rotate->show();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(shape_tmp_ptr->transf_order[i_tr] != "")
+                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+                button_transform_move->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+                button_transform_scale->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+                button_transform_rotate->hide();
+        }
+    }
+    else if(!QString::compare(shape_tmp_ptr->type, "polyhedron"))
+    {
+        shape_polyhedron_parameters *shape_polyhedron_tmp = (shape_polyhedron_parameters *)(shape_tmp_ptr);
+        rad_but_type_polyhedron->setChecked(true);
+        sh_polyhedron_name->setText(shape_polyhedron_tmp->name);
+        sh_polyhedron_priority->setText(shape_polyhedron_tmp->priority);
+        sh_polyhedron_verticeslist->clear();
+        sh_polyhedron_faceslist->clear();
+        for(int i_pcpy = 0; i_pcpy < shape_polyhedron_tmp->vertices_x.size() && i_pcpy < shape_polyhedron_tmp->vertices_y.size() && i_pcpy < shape_polyhedron_tmp->vertices_z.size(); ++i_pcpy)
+        {
+            QTableWidgetItem *item_v_x = new QTableWidgetItem;
+            QTableWidgetItem *item_v_y = new QTableWidgetItem;
+            QTableWidgetItem *item_v_z = new QTableWidgetItem;
+            QTableWidgetItem *item_f_x = new QTableWidgetItem;
+            QTableWidgetItem *item_f_y = new QTableWidgetItem;
+            QTableWidgetItem *item_f_z = new QTableWidgetItem;
+            item_v_x->setText(shape_polyhedron_tmp->vertices_x.at(i_pcpy));
+            item_v_y->setText(shape_polyhedron_tmp->vertices_y.at(i_pcpy));
+            item_v_z->setText(shape_polyhedron_tmp->vertices_z.at(i_pcpy));
+            item_f_x->setText(shape_polyhedron_tmp->faces_x.at(i_pcpy));
+            item_f_y->setText(shape_polyhedron_tmp->faces_y.at(i_pcpy));
+            item_f_z->setText(shape_polyhedron_tmp->faces_z.at(i_pcpy));
+            sh_polyhedron_verticeslist->setItem(i_pcpy, 0, item_v_x);
+            sh_polyhedron_verticeslist->setItem(i_pcpy, 1, item_v_y);
+            sh_polyhedron_verticeslist->setItem(i_pcpy, 2, item_v_z);
+            sh_polyhedron_faceslist->setItem(i_pcpy, 0, item_v_x);
+            sh_polyhedron_faceslist->setItem(i_pcpy, 1, item_v_y);
+            sh_polyhedron_faceslist->setItem(i_pcpy, 2, item_v_z);
+        }
+        sh_polyhedron_material->setCurrentIndex(sh_polyhedron_material->findText(shape_polyhedron_tmp->material));
+        stackedLayout->setCurrentIndex(1);
+        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+        transforms_list_widget->clear();
+        button_transform_move->show();
+        button_transform_scale->show();
+        button_transform_rotate->show();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(shape_tmp_ptr->transf_order[i_tr] != "")
+                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+                button_transform_move->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+                button_transform_scale->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+                button_transform_rotate->hide();
+        }
+    }
+    else if(!QString::compare(shape_tmp_ptr->type, "stlfile"))
+    {
+        shape_stlfile_parameters *shape_stlfile_tmp = (shape_stlfile_parameters *)(shape_tmp_ptr);
+        rad_but_type_stlfile->setChecked(true);
+        sh_stlfile_name->setText(shape_stlfile_tmp->name);
+        sh_stlfile_priority->setText(shape_stlfile_tmp->priority);
+        sh_stlfile_path->setText(shape_stlfile_tmp->path);
+        sh_stlfile_material->setCurrentIndex(sh_stlfile_material->findText(shape_stlfile_tmp->material));
+        stackedLayout->setCurrentIndex(1);
+        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+        transforms_list_widget->clear();
+        button_transform_move->show();
+        button_transform_scale->show();
+        button_transform_rotate->show();
+        for(int i_tr = 0; i_tr < 3; ++i_tr)
+        {
+            if(shape_tmp_ptr->transf_order[i_tr] != "")
+                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+                button_transform_move->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+                button_transform_scale->hide();
+            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+                button_transform_rotate->hide();
+        }
+    }
 
     OnSetShapeTypeLayout();
 }
@@ -1284,6 +2635,55 @@ void PageGeometry::OnSetShapeTypeLayout(void)   //called to change layout accord
             if(shapes_list_widget->item(i)->text() == sh_cylindricalshell_name->text())
                 shapes_list_widget->setCurrentRow(i);
     }
+    else if(rad_but_type_curve->isChecked())
+    {
+        stackedLayout->setCurrentIndex(5);
+        for(int i = 0 ; i < shapes_list_widget->count(); ++i)
+            if(shapes_list_widget->item(i)->text() == sh_curve_name->text())
+                shapes_list_widget->setCurrentRow(i);
+    }
+    else if(rad_but_type_wire->isChecked())
+    {
+        stackedLayout->setCurrentIndex(6);
+        for(int i = 0 ; i < shapes_list_widget->count(); ++i)
+            if(shapes_list_widget->item(i)->text() == sh_wire_name->text())
+                shapes_list_widget->setCurrentRow(i);
+    }
+    else if(rad_but_type_polygon->isChecked())
+    {
+        stackedLayout->setCurrentIndex(7);
+        for(int i = 0 ; i < shapes_list_widget->count(); ++i)
+            if(shapes_list_widget->item(i)->text() == sh_polygon_name->text())
+                shapes_list_widget->setCurrentRow(i);
+    }
+    else if(rad_but_type_extrudedpolygon->isChecked())
+    {
+        stackedLayout->setCurrentIndex(8);
+        for(int i = 0 ; i < shapes_list_widget->count(); ++i)
+            if(shapes_list_widget->item(i)->text() == sh_extrudedpolygon_name->text())
+                shapes_list_widget->setCurrentRow(i);
+    }
+    else if(rad_but_type_rotationalpolygon->isChecked())
+    {
+        stackedLayout->setCurrentIndex(9);
+        for(int i = 0 ; i < shapes_list_widget->count(); ++i)
+            if(shapes_list_widget->item(i)->text() == sh_rotationalpolygon_name->text())
+                shapes_list_widget->setCurrentRow(i);
+    }
+    else if(rad_but_type_polyhedron->isChecked())
+    {
+        stackedLayout->setCurrentIndex(10);
+        for(int i = 0 ; i < shapes_list_widget->count(); ++i)
+            if(shapes_list_widget->item(i)->text() == sh_polyhedron_name->text())
+                shapes_list_widget->setCurrentRow(i);
+    }
+    else if(rad_but_type_stlfile->isChecked())
+    {
+        stackedLayout->setCurrentIndex(11);
+        for(int i = 0 ; i < shapes_list_widget->count(); ++i)
+            if(shapes_list_widget->item(i)->text() == sh_stlfile_name->text())
+                shapes_list_widget->setCurrentRow(i);
+    }
 }
 
 
@@ -1294,6 +2694,13 @@ void PageGeometry::initializePage() //load all materials, to be accessible to se
     sh_sphericalshell_material->clear();
     sh_cylinder_material->clear();
     sh_cylindricalshell_material->clear();
+    sh_curve_material->clear();
+    sh_wire_material->clear();
+    sh_polygon_material->clear();
+    sh_extrudedpolygon_material->clear();
+    sh_rotationalpolygon_material->clear();
+    sh_polyhedron_material->clear();
+    sh_stlfile_material->clear();
 
     for (int i = 0; i < wizardsparent_tmp->GetQtyProperties(); ++i)
     {
@@ -1306,6 +2713,13 @@ void PageGeometry::initializePage() //load all materials, to be accessible to se
         sh_sphericalshell_material->addItem(str);
         sh_cylinder_material->addItem(str);
         sh_cylindricalshell_material->addItem(str);
+        sh_curve_material->addItem(str);
+        sh_wire_material->addItem(str);
+        sh_polygon_material->addItem(str);
+        sh_extrudedpolygon_material->addItem(str);
+        sh_rotationalpolygon_material->addItem(str);
+        sh_polyhedron_material->addItem(str);
+        sh_stlfile_material->addItem(str);
     }
 }
 
@@ -1315,6 +2729,12 @@ double PageGeometry::EvaluateVar(QString var_to_eval)
     return var_edit->GetExprEngine()->evaluate(var_to_eval).toString().toDouble();
 }
 
+void PageGeometry::OnPointslistUpdate(int row, int column)
+{
+    QTableWidget* tableSender = qobject_cast<QTableWidget*>(sender()); // retrieve the table you have clicked
+    if(tableSender->rowCount() == row + 1)  //if clicked the last row then append a new one
+        tableSender->setRowCount(row + 2);
+}
 
 void PageGeometry::OnChangeTransformOrder(void)
 {

@@ -15,6 +15,7 @@ VariablesEditor::VariablesEditor(QWizard *parent): QDialog(parent)
 
     QVBoxLayout *centralLayout = new QVBoxLayout(this);
     centralLayout->addWidget(var_table);
+    OnEvaluateVarTable();   //call the function at the beginning to initialize so avoid crash
 
     connect(var_table, SIGNAL(itemSelectionChanged()), this, SLOT(OnEvaluateVarTable()));
 
