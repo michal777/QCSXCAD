@@ -33,7 +33,7 @@ QWizardPage *WizardInit::ReturnWorkflowStep(QString workflowname, VariablesEdito
     else if(!workflowname.compare("General geometry settings\n"))
         return new PageGeneralGeometrySettings(this, wizardsparent_tmp);
     else if(!workflowname.compare("Materials\n"))
-        return new PageMaterials(this, wizardsparent_tmp);
+        return new PageMaterials(this, wizardsparent_tmp, var_edit_main);
     else if(!workflowname.compare("Geometry\n"))
         return new PageGeometry(this, wizardsparent_tmp, var_edit_main);
     else if(!workflowname.compare("Ports\n"))

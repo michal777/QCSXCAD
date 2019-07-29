@@ -63,305 +63,120 @@ void PageGeometry::SaveToSimScriptBuffer(void)
 
     for(int i_sh = 0; i_sh < shapes_param_list_ptr->count(); ++i_sh)
     {
+        //print functions defining shapes to the test script
         if(shapes_param_list_ptr->at(i_sh)->type == "box")
         {
-            shape_box_parameters *shape_box_tmp = (shape_box_parameters *)(shapes_param_list_ptr->at(i_sh));
-            text_save_to_simscript.append(QString("CSX = AddBox(CSX, '%1', %2, ").arg(shape_box_tmp->material).arg(EvaluateVar(shape_box_tmp->priority)));
-            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_box_tmp->x_coord_1)).arg(EvaluateVar(shape_box_tmp->y_coord_1)).arg(EvaluateVar(shape_box_tmp->z_coord_1)));
-            text_save_to_simscript.append(QString("[%1 %2 %3]").arg(EvaluateVar(shape_box_tmp->x_coord_2)).arg(EvaluateVar(shape_box_tmp->y_coord_2)).arg(EvaluateVar(shape_box_tmp->z_coord_2)));
-
-            if(shape_box_tmp->transf_order[0] == "Scale" || shape_box_tmp->transf_order[0] == "Rotate" || shape_box_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_box_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_box_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_box_tmp->transf_scale_x)).arg(EvaluateVar(shape_box_tmp->transf_scale_y)).arg(EvaluateVar(shape_box_tmp->transf_scale_z)));
-                    if(shape_box_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_box_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_box_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_box_tmp->transf_rotate_az)).arg(EvaluateVar(shape_box_tmp->transf_rotate_angle)));
-                    if(shape_box_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_box_tmp->transf_move_x)).arg(EvaluateVar(shape_box_tmp->transf_move_y)).arg(EvaluateVar(shape_box_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            shape_box_parameters *shape_box = (shape_box_parameters *)(shapes_param_list_ptr->at(i_sh));
+            text_save_to_simscript.append(QString("CSX = AddBox(CSX, '%1', %2, ").arg(shape_box->material).arg(EvaluateVar(shape_box->priority)));
+            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_box->x_coord_1)).arg(EvaluateVar(shape_box->y_coord_1)).arg(EvaluateVar(shape_box->z_coord_1)));
+            text_save_to_simscript.append(QString("[%1 %2 %3]").arg(EvaluateVar(shape_box->x_coord_2)).arg(EvaluateVar(shape_box->y_coord_2)).arg(EvaluateVar(shape_box->z_coord_2)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "sphere")
         {
-            shape_sphere_parameters *shape_sphere_tmp = (shape_sphere_parameters *)(shapes_param_list_ptr->at(i_sh));
-            text_save_to_simscript.append(QString("CSX = AddSphere(CSX, '%1', %2, ").arg(shape_sphere_tmp->material).arg(EvaluateVar(shape_sphere_tmp->priority)));
-            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_sphere_tmp->x_coord)).arg(EvaluateVar(shape_sphere_tmp->y_coord)).arg(EvaluateVar(shape_sphere_tmp->z_coord)));
-            text_save_to_simscript.append(QString("%1").arg(EvaluateVar(shape_sphere_tmp->radius)));
-
-            if(shape_sphere_tmp->transf_order[0] == "Scale" || shape_sphere_tmp->transf_order[0] == "Rotate" || shape_sphere_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_sphere_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_sphere_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_sphere_tmp->transf_scale_x)).arg(EvaluateVar(shape_sphere_tmp->transf_scale_y)).arg(EvaluateVar(shape_sphere_tmp->transf_scale_z)));
-                    if(shape_sphere_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_sphere_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_sphere_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_sphere_tmp->transf_rotate_az)).arg(EvaluateVar(shape_sphere_tmp->transf_rotate_angle)));
-                    if(shape_sphere_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_sphere_tmp->transf_move_x)).arg(EvaluateVar(shape_sphere_tmp->transf_move_y)).arg(EvaluateVar(shape_sphere_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            shape_sphere_parameters *shape_sphere = (shape_sphere_parameters *)(shapes_param_list_ptr->at(i_sh));
+            text_save_to_simscript.append(QString("CSX = AddSphere(CSX, '%1', %2, ").arg(shape_sphere->material).arg(EvaluateVar(shape_sphere->priority)));
+            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_sphere->x_coord)).arg(EvaluateVar(shape_sphere->y_coord)).arg(EvaluateVar(shape_sphere->z_coord)));
+            text_save_to_simscript.append(QString("%1").arg(EvaluateVar(shape_sphere->radius)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "sphericalshell")
         {
-            shape_sphericalshell_parameters *shape_sphericalshell_tmp = (shape_sphericalshell_parameters *)(shapes_param_list_ptr->at(i_sh));
-            text_save_to_simscript.append(QString("CSX = AddSphericalShell(CSX, '%1', %2, ").arg(shape_sphericalshell_tmp->material).arg(EvaluateVar(shape_sphericalshell_tmp->priority)));
-            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_sphericalshell_tmp->x_coord)).arg(EvaluateVar(shape_sphericalshell_tmp->y_coord)).arg(EvaluateVar(shape_sphericalshell_tmp->z_coord)));
-            text_save_to_simscript.append(QString("%1, %2").arg((EvaluateVar(shape_sphericalshell_tmp->radius_outer)+EvaluateVar(shape_sphericalshell_tmp->radius_inner))/2).arg(EvaluateVar(shape_sphericalshell_tmp->radius_outer)-EvaluateVar(shape_sphericalshell_tmp->radius_inner)));
-
-            if(shape_sphericalshell_tmp->transf_order[0] == "Scale" || shape_sphericalshell_tmp->transf_order[0] == "Rotate" || shape_sphericalshell_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_sphericalshell_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_sphericalshell_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_sphericalshell_tmp->transf_scale_x)).arg(EvaluateVar(shape_sphericalshell_tmp->transf_scale_y)).arg(EvaluateVar(shape_sphericalshell_tmp->transf_scale_z)));
-                    if(shape_sphericalshell_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_sphericalshell_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_sphericalshell_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_sphericalshell_tmp->transf_rotate_az)).arg(EvaluateVar(shape_sphericalshell_tmp->transf_rotate_angle)));
-                    if(shape_sphericalshell_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_sphericalshell_tmp->transf_move_x)).arg(EvaluateVar(shape_sphericalshell_tmp->transf_move_y)).arg(EvaluateVar(shape_sphericalshell_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            shape_sphericalshell_parameters *shape_sphericalshell = (shape_sphericalshell_parameters *)(shapes_param_list_ptr->at(i_sh));
+            text_save_to_simscript.append(QString("CSX = AddSphericalShell(CSX, '%1', %2, ").arg(shape_sphericalshell->material).arg(EvaluateVar(shape_sphericalshell->priority)));
+            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_sphericalshell->x_coord)).arg(EvaluateVar(shape_sphericalshell->y_coord)).arg(EvaluateVar(shape_sphericalshell->z_coord)));
+            text_save_to_simscript.append(QString("%1, %2").arg((EvaluateVar(shape_sphericalshell->radius_outer)+EvaluateVar(shape_sphericalshell->radius_inner))/2).arg(EvaluateVar(shape_sphericalshell->radius_outer)-EvaluateVar(shape_sphericalshell->radius_inner)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "cylinder")
         {
-            shape_cylinder_parameters *shape_cylinder_tmp = (shape_cylinder_parameters *)(shapes_param_list_ptr->at(i_sh));
-            text_save_to_simscript.append(QString("CSX = AddCylinder(CSX, '%1', %2, ").arg(shape_cylinder_tmp->material).arg(EvaluateVar(shape_cylinder_tmp->priority)));
-            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylinder_tmp->x_coord_1)).arg(EvaluateVar(shape_cylinder_tmp->y_coord_1)).arg(EvaluateVar(shape_cylinder_tmp->z_coord_1)));
-            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylinder_tmp->x_coord_2)).arg(EvaluateVar(shape_cylinder_tmp->y_coord_2)).arg(EvaluateVar(shape_cylinder_tmp->z_coord_2)));
-            text_save_to_simscript.append(QString("%1").arg(EvaluateVar(shape_cylinder_tmp->radius)));
-
-            if(shape_cylinder_tmp->transf_order[0] == "Scale" || shape_cylinder_tmp->transf_order[0] == "Rotate" || shape_cylinder_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_cylinder_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_cylinder_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_cylinder_tmp->transf_scale_x)).arg(EvaluateVar(shape_cylinder_tmp->transf_scale_y)).arg(EvaluateVar(shape_cylinder_tmp->transf_scale_z)));
-                    if(shape_cylinder_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_cylinder_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_cylinder_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_cylinder_tmp->transf_rotate_az)).arg(EvaluateVar(shape_cylinder_tmp->transf_rotate_angle)));
-                    if(shape_cylinder_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_cylinder_tmp->transf_move_x)).arg(EvaluateVar(shape_cylinder_tmp->transf_move_y)).arg(EvaluateVar(shape_cylinder_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            shape_cylinder_parameters *shape_cylinder = (shape_cylinder_parameters *)(shapes_param_list_ptr->at(i_sh));
+            text_save_to_simscript.append(QString("CSX = AddCylinder(CSX, '%1', %2, ").arg(shape_cylinder->material).arg(EvaluateVar(shape_cylinder->priority)));
+            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylinder->x_coord_1)).arg(EvaluateVar(shape_cylinder->y_coord_1)).arg(EvaluateVar(shape_cylinder->z_coord_1)));
+            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylinder->x_coord_2)).arg(EvaluateVar(shape_cylinder->y_coord_2)).arg(EvaluateVar(shape_cylinder->z_coord_2)));
+            text_save_to_simscript.append(QString("%1").arg(EvaluateVar(shape_cylinder->radius)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "cylindricalshell")
         {
-            shape_cylindricalshell_parameters *shape_cylindricalshell_tmp = (shape_cylindricalshell_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_cylindricalshell_parameters *shape_cylindricalshell = (shape_cylindricalshell_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            text_save_to_simscript.append(QString("CSX = AddCylindricalShell(CSX, '%1', %2, ").arg(shape_cylindricalshell_tmp->material).arg(EvaluateVar(shape_cylindricalshell_tmp->priority)));
-            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylindricalshell_tmp->x_coord_1)).arg(EvaluateVar(shape_cylindricalshell_tmp->y_coord_1)).arg(EvaluateVar(shape_cylindricalshell_tmp->z_coord_1)));
-            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylindricalshell_tmp->x_coord_2)).arg(EvaluateVar(shape_cylindricalshell_tmp->y_coord_2)).arg(EvaluateVar(shape_cylindricalshell_tmp->z_coord_2)));
-            text_save_to_simscript.append(QString("%1, %2").arg((EvaluateVar(shape_cylindricalshell_tmp->radius_outer)+EvaluateVar(shape_cylindricalshell_tmp->radius_inner))/2).arg(EvaluateVar(shape_cylindricalshell_tmp->radius_outer)-EvaluateVar(shape_cylindricalshell_tmp->radius_inner)));
-
-            if(shape_cylindricalshell_tmp->transf_order[0] == "Scale" || shape_cylindricalshell_tmp->transf_order[0] == "Rotate" || shape_cylindricalshell_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_cylindricalshell_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_cylindricalshell_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_cylindricalshell_tmp->transf_scale_x)).arg(EvaluateVar(shape_cylindricalshell_tmp->transf_scale_y)).arg(EvaluateVar(shape_cylindricalshell_tmp->transf_scale_z)));
-                    if(shape_cylindricalshell_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_cylindricalshell_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_cylindricalshell_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_cylindricalshell_tmp->transf_rotate_az)).arg(EvaluateVar(shape_cylindricalshell_tmp->transf_rotate_angle)));
-                    if(shape_cylindricalshell_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_cylindricalshell_tmp->transf_move_x)).arg(EvaluateVar(shape_cylindricalshell_tmp->transf_move_y)).arg(EvaluateVar(shape_cylindricalshell_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            text_save_to_simscript.append(QString("CSX = AddCylindricalShell(CSX, '%1', %2, ").arg(shape_cylindricalshell->material).arg(EvaluateVar(shape_cylindricalshell->priority)));
+            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylindricalshell->x_coord_1)).arg(EvaluateVar(shape_cylindricalshell->y_coord_1)).arg(EvaluateVar(shape_cylindricalshell->z_coord_1)));
+            text_save_to_simscript.append(QString("[%1 %2 %3], ").arg(EvaluateVar(shape_cylindricalshell->x_coord_2)).arg(EvaluateVar(shape_cylindricalshell->y_coord_2)).arg(EvaluateVar(shape_cylindricalshell->z_coord_2)));
+            text_save_to_simscript.append(QString("%1, %2").arg((EvaluateVar(shape_cylindricalshell->radius_outer)+EvaluateVar(shape_cylindricalshell->radius_inner))/2).arg(EvaluateVar(shape_cylindricalshell->radius_outer)-EvaluateVar(shape_cylindricalshell->radius_inner)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "curve")
         {
-            shape_curve_parameters *shape_curve_tmp = (shape_curve_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_curve_parameters *shape_curve = (shape_curve_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            for(int i_pcpy = 0; i_pcpy < shape_curve_tmp->points_x.size() && i_pcpy < shape_curve_tmp->points_y.size() && i_pcpy < shape_curve_tmp->points_z.size(); ++i_pcpy)
-                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3; points(3, %1) = %4;\n").arg(i_pcpy).arg(EvaluateVar(shape_curve_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_curve_tmp->points_y[i_pcpy])).arg(EvaluateVar(shape_curve_tmp->points_z[i_pcpy])));
-            text_save_to_simscript.append(QString("CSX = AddCurve(CSX, '%1', %2, points").arg(shape_curve_tmp->material).arg(EvaluateVar(shape_curve_tmp->priority)));
-
-            if(shape_curve_tmp->transf_order[0] == "Scale" || shape_curve_tmp->transf_order[0] == "Rotate" || shape_curve_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_curve_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_curve_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_curve_tmp->transf_scale_x)).arg(EvaluateVar(shape_curve_tmp->transf_scale_y)).arg(EvaluateVar(shape_curve_tmp->transf_scale_z)));
-                    if(shape_curve_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_curve_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_curve_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_curve_tmp->transf_rotate_az)).arg(EvaluateVar(shape_curve_tmp->transf_rotate_angle)));
-                    if(shape_curve_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_curve_tmp->transf_move_x)).arg(EvaluateVar(shape_curve_tmp->transf_move_y)).arg(EvaluateVar(shape_curve_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            for(int i_pcpy = 0; i_pcpy < shape_curve->points_x.size() && i_pcpy < shape_curve->points_y.size() && i_pcpy < shape_curve->points_z.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3; points(3, %1) = %4;\n").arg(i_pcpy).arg(EvaluateVar(shape_curve->points_x[i_pcpy])).arg(EvaluateVar(shape_curve->points_y[i_pcpy])).arg(EvaluateVar(shape_curve->points_z[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddCurve(CSX, '%1', %2, points").arg(shape_curve->material).arg(EvaluateVar(shape_curve->priority)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "wire")
         {
-            shape_wire_parameters *shape_wire_tmp = (shape_wire_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_wire_parameters *shape_wire = (shape_wire_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            for(int i_pcpy = 0; i_pcpy < shape_wire_tmp->points_x.size() && i_pcpy < shape_wire_tmp->points_y.size() && i_pcpy < shape_wire_tmp->points_z.size(); ++i_pcpy)
-                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3; points(3, %1) = %4;\n").arg(i_pcpy).arg(EvaluateVar(shape_wire_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_wire_tmp->points_y[i_pcpy])).arg(EvaluateVar(shape_wire_tmp->points_z[i_pcpy])));
-            text_save_to_simscript.append(QString("CSX = AddWire(CSX, '%1', %2, points, %3").arg(shape_wire_tmp->material).arg(EvaluateVar(shape_wire_tmp->priority)).arg(EvaluateVar(shape_wire_tmp->radius)));
-
-            if(shape_wire_tmp->transf_order[0] == "Scale" || shape_wire_tmp->transf_order[0] == "Rotate" || shape_wire_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_wire_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_wire_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_wire_tmp->transf_scale_x)).arg(EvaluateVar(shape_wire_tmp->transf_scale_y)).arg(EvaluateVar(shape_wire_tmp->transf_scale_z)));
-                    if(shape_wire_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_wire_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_wire_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_wire_tmp->transf_rotate_az)).arg(EvaluateVar(shape_wire_tmp->transf_rotate_angle)));
-                    if(shape_wire_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_wire_tmp->transf_move_x)).arg(EvaluateVar(shape_wire_tmp->transf_move_y)).arg(EvaluateVar(shape_wire_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            for(int i_pcpy = 0; i_pcpy < shape_wire->points_x.size() && i_pcpy < shape_wire->points_y.size() && i_pcpy < shape_wire->points_z.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3; points(3, %1) = %4;\n").arg(i_pcpy).arg(EvaluateVar(shape_wire->points_x[i_pcpy])).arg(EvaluateVar(shape_wire->points_y[i_pcpy])).arg(EvaluateVar(shape_wire->points_z[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddWire(CSX, '%1', %2, points, %3").arg(shape_wire->material).arg(EvaluateVar(shape_wire->priority)).arg(EvaluateVar(shape_wire->radius)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "polygon")
         {
-            shape_polygon_parameters *shape_polygon_tmp = (shape_polygon_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_polygon_parameters *shape_polygon = (shape_polygon_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            for(int i_pcpy = 0; i_pcpy < shape_polygon_tmp->points_x.size() && i_pcpy < shape_polygon_tmp->points_y.size(); ++i_pcpy)
-                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_polygon_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_polygon_tmp->points_y[i_pcpy])));
-            text_save_to_simscript.append(QString("CSX = AddPolygon(CSX, '%1', %2, %3, %4, points").arg(shape_polygon_tmp->material).arg(EvaluateVar(shape_polygon_tmp->priority)).arg(shape_polygon_tmp->normal_dir).arg(EvaluateVar(shape_polygon_tmp->elevation)));
-
-            if(shape_polygon_tmp->transf_order[0] == "Scale" || shape_polygon_tmp->transf_order[0] == "Rotate" || shape_polygon_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_polygon_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_polygon_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_polygon_tmp->transf_scale_x)).arg(EvaluateVar(shape_polygon_tmp->transf_scale_y)).arg(EvaluateVar(shape_polygon_tmp->transf_scale_z)));
-                    if(shape_polygon_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_polygon_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_polygon_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_polygon_tmp->transf_rotate_az)).arg(EvaluateVar(shape_polygon_tmp->transf_rotate_angle)));
-                    if(shape_polygon_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_polygon_tmp->transf_move_x)).arg(EvaluateVar(shape_polygon_tmp->transf_move_y)).arg(EvaluateVar(shape_polygon_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            for(int i_pcpy = 0; i_pcpy < shape_polygon->points_x.size() && i_pcpy < shape_polygon->points_y.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_polygon->points_x[i_pcpy])).arg(EvaluateVar(shape_polygon->points_y[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddPolygon(CSX, '%1', %2, %3, %4, points").arg(shape_polygon->material).arg(EvaluateVar(shape_polygon->priority)).arg(shape_polygon->normal_dir).arg(EvaluateVar(shape_polygon->elevation)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "extrudedpolygon")
         {
-            shape_extrudedpolygon_parameters *shape_extrudedpolygon_tmp = (shape_extrudedpolygon_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_extrudedpolygon_parameters *shape_extrudedpolygon = (shape_extrudedpolygon_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            for(int i_pcpy = 0; i_pcpy < shape_extrudedpolygon_tmp->points_x.size() && i_pcpy < shape_extrudedpolygon_tmp->points_y.size(); ++i_pcpy)
-                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_extrudedpolygon_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_extrudedpolygon_tmp->points_y[i_pcpy])));
-            text_save_to_simscript.append(QString("CSX = AddLinPoly(CSX, '%1', %2, %3, %4, points, %5").arg(shape_extrudedpolygon_tmp->material).arg(EvaluateVar(shape_extrudedpolygon_tmp->priority)).arg(shape_extrudedpolygon_tmp->normal_dir).arg(EvaluateVar(shape_extrudedpolygon_tmp->elevation)).arg(EvaluateVar(shape_extrudedpolygon_tmp->length)));
-
-            if(shape_extrudedpolygon_tmp->transf_order[0] == "Scale" || shape_extrudedpolygon_tmp->transf_order[0] == "Rotate" || shape_extrudedpolygon_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_extrudedpolygon_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_extrudedpolygon_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_scale_x)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_scale_y)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_scale_z)));
-                    if(shape_extrudedpolygon_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_az)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_rotate_angle)));
-                    if(shape_extrudedpolygon_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_move_x)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_move_y)).arg(EvaluateVar(shape_extrudedpolygon_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            for(int i_pcpy = 0; i_pcpy < shape_extrudedpolygon->points_x.size() && i_pcpy < shape_extrudedpolygon->points_y.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_extrudedpolygon->points_x[i_pcpy])).arg(EvaluateVar(shape_extrudedpolygon->points_y[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddLinPoly(CSX, '%1', %2, %3, %4, points, %5").arg(shape_extrudedpolygon->material).arg(EvaluateVar(shape_extrudedpolygon->priority)).arg(shape_extrudedpolygon->normal_dir).arg(EvaluateVar(shape_extrudedpolygon->elevation)).arg(EvaluateVar(shape_extrudedpolygon->length)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "rotationalpolygon")
         {
-            shape_rotationalpolygon_parameters *shape_rotationalpolygon_tmp = (shape_rotationalpolygon_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_rotationalpolygon_parameters *shape_rotationalpolygon = (shape_rotationalpolygon_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            for(int i_pcpy = 0; i_pcpy < shape_rotationalpolygon_tmp->points_x.size() && i_pcpy < shape_rotationalpolygon_tmp->points_y.size(); ++i_pcpy)
-                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_rotationalpolygon_tmp->points_x[i_pcpy])).arg(EvaluateVar(shape_rotationalpolygon_tmp->points_y[i_pcpy])));
-            text_save_to_simscript.append(QString("CSX = AddRotPoly(CSX, '%1', %2, %3, points, %4, [%5 %6]").arg(shape_rotationalpolygon_tmp->material).arg(EvaluateVar(shape_rotationalpolygon_tmp->priority)).arg(shape_rotationalpolygon_tmp->normal_dir).arg(EvaluateVar(shape_rotationalpolygon_tmp->rot_axis_dir)).arg(EvaluateVar(shape_rotationalpolygon_tmp->angle1)).arg(EvaluateVar(shape_rotationalpolygon_tmp->angle2)));
-
-            if(shape_rotationalpolygon_tmp->transf_order[0] == "Scale" || shape_rotationalpolygon_tmp->transf_order[0] == "Rotate" || shape_rotationalpolygon_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_rotationalpolygon_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_rotationalpolygon_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_scale_x)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_scale_y)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_scale_z)));
-                    if(shape_rotationalpolygon_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_az)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_rotate_angle)));
-                    if(shape_rotationalpolygon_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_move_x)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_move_y)).arg(EvaluateVar(shape_rotationalpolygon_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            for(int i_pcpy = 0; i_pcpy < shape_rotationalpolygon->points_x.size() && i_pcpy < shape_rotationalpolygon->points_y.size(); ++i_pcpy)
+                text_save_to_simscript.append(QString("points(1, %1) = %2; points(2, %1) = %3;\n").arg(i_pcpy).arg(EvaluateVar(shape_rotationalpolygon->points_x[i_pcpy])).arg(EvaluateVar(shape_rotationalpolygon->points_y[i_pcpy])));
+            text_save_to_simscript.append(QString("CSX = AddRotPoly(CSX, '%1', %2, %3, points, %4, [%5 %6]").arg(shape_rotationalpolygon->material).arg(EvaluateVar(shape_rotationalpolygon->priority)).arg(shape_rotationalpolygon->normal_dir).arg(EvaluateVar(shape_rotationalpolygon->rot_axis_dir)).arg(EvaluateVar(shape_rotationalpolygon->angle1)).arg(EvaluateVar(shape_rotationalpolygon->angle2)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "polyhedron")
         {
-            shape_polyhedron_parameters *shape_polyhedron_tmp = (shape_polyhedron_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_polyhedron_parameters *shape_polyhedron = (shape_polyhedron_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            for(int i_pcpy = 0; i_pcpy < shape_polyhedron_tmp->vertices_x.size() && i_pcpy < shape_polyhedron_tmp->vertices_y.size() && i_pcpy < shape_polyhedron_tmp->vertices_z.size(); ++i_pcpy)
+            for(int i_pcpy = 0; i_pcpy < shape_polyhedron->vertices_x.size() && i_pcpy < shape_polyhedron->vertices_y.size() && i_pcpy < shape_polyhedron->vertices_z.size(); ++i_pcpy)
             {
-                text_save_to_simscript.append(QString("vertices{%1} = [%2 %3 %4];\n").arg(i_pcpy).arg(EvaluateVar(shape_polyhedron_tmp->vertices_x[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->vertices_y[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->vertices_z[i_pcpy])));
-                text_save_to_simscript.append(QString("faces{%1} = [%2 %3 %4];\n").arg(i_pcpy).arg(EvaluateVar(shape_polyhedron_tmp->faces_x[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->faces_y[i_pcpy])).arg(EvaluateVar(shape_polyhedron_tmp->faces_z[i_pcpy])));
+                text_save_to_simscript.append(QString("vertices{%1} = [%2 %3 %4];\n").arg(i_pcpy).arg(EvaluateVar(shape_polyhedron->vertices_x[i_pcpy])).arg(EvaluateVar(shape_polyhedron->vertices_y[i_pcpy])).arg(EvaluateVar(shape_polyhedron->vertices_z[i_pcpy])));
+                text_save_to_simscript.append(QString("faces{%1} = [%2 %3 %4];\n").arg(i_pcpy).arg(EvaluateVar(shape_polyhedron->faces_x[i_pcpy])).arg(EvaluateVar(shape_polyhedron->faces_y[i_pcpy])).arg(EvaluateVar(shape_polyhedron->faces_z[i_pcpy])));
             }
-            text_save_to_simscript.append(QString("CSX = AddPolyhedron(CSX, '%1', %2, vertices, faces").arg(shape_polyhedron_tmp->material).arg(EvaluateVar(shape_polyhedron_tmp->priority)));
-
-            if(shape_polyhedron_tmp->transf_order[0] == "Scale" || shape_polyhedron_tmp->transf_order[0] == "Rotate" || shape_polyhedron_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_polyhedron_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_polyhedron_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_polyhedron_tmp->transf_scale_x)).arg(EvaluateVar(shape_polyhedron_tmp->transf_scale_y)).arg(EvaluateVar(shape_polyhedron_tmp->transf_scale_z)));
-                    if(shape_polyhedron_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_az)).arg(EvaluateVar(shape_polyhedron_tmp->transf_rotate_angle)));
-                    if(shape_polyhedron_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_polyhedron_tmp->transf_move_x)).arg(EvaluateVar(shape_polyhedron_tmp->transf_move_y)).arg(EvaluateVar(shape_polyhedron_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            text_save_to_simscript.append(QString("CSX = AddPolyhedron(CSX, '%1', %2, vertices, faces").arg(shape_polyhedron->material).arg(EvaluateVar(shape_polyhedron->priority)));
         }
         else if(shapes_param_list_ptr->at(i_sh)->type == "stlfile")
         {
-            shape_stlfile_parameters *shape_stlfile_tmp = (shape_stlfile_parameters *)(shapes_param_list_ptr->at(i_sh));
+            shape_stlfile_parameters *shape_stlfile = (shape_stlfile_parameters *)(shapes_param_list_ptr->at(i_sh));
 
-            text_save_to_simscript.append(QString("CSX = ImportSTL(CSX, '%1', %2, '%3'").arg(shape_stlfile_tmp->material).arg(EvaluateVar(shape_stlfile_tmp->priority)).arg(shape_stlfile_tmp->path));
-
-            if(shape_stlfile_tmp->transf_order[0] == "Scale" || shape_stlfile_tmp->transf_order[0] == "Rotate" || shape_stlfile_tmp->transf_order[0] == "Move")
-            {
-                text_save_to_simscript.append(QString(", 'Transform',{"));
-                for(int i_tr = 0; shape_stlfile_tmp->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
-                {
-                    if(shape_stlfile_tmp->transf_order[i_tr] == "Scale")
-                        text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shape_stlfile_tmp->transf_scale_x)).arg(EvaluateVar(shape_stlfile_tmp->transf_scale_y)).arg(EvaluateVar(shape_stlfile_tmp->transf_scale_z)));
-                    if(shape_stlfile_tmp->transf_order[i_tr] == "Rotate")
-                        text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_ax)).arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_ay)).arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_az)).arg(EvaluateVar(shape_stlfile_tmp->transf_rotate_angle)));
-                    if(shape_stlfile_tmp->transf_order[i_tr] == "Move")
-                        text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shape_stlfile_tmp->transf_move_x)).arg(EvaluateVar(shape_stlfile_tmp->transf_move_y)).arg(EvaluateVar(shape_stlfile_tmp->transf_move_z)));
-                }
-                text_save_to_simscript.chop(2); //cut the last space and comma
-                text_save_to_simscript.append(QString("}"));
-            }
-            text_save_to_simscript.append(QString(");\n"));
+            text_save_to_simscript.append(QString("CSX = ImportSTL(CSX, '%1', %2, '%3'").arg(shape_stlfile->material).arg(EvaluateVar(shape_stlfile->priority)).arg(shape_stlfile->path));
         }
+
+        //print transforms, do it the same way for any type of the shapes above
+        if(shapes_param_list_ptr->at(i_sh)->transf_order[0] == "Scale" || shapes_param_list_ptr->at(i_sh)->transf_order[0] == "Rotate" || shapes_param_list_ptr->at(i_sh)->transf_order[0] == "Move")
+        {
+            text_save_to_simscript.append(QString(", 'Transform',{"));
+            for(int i_tr = 0; shapes_param_list_ptr->at(i_sh)->transf_order[i_tr] != "" && i_tr < 3; ++i_tr)
+            {
+                if(shapes_param_list_ptr->at(i_sh)->transf_order[i_tr] == "Scale")
+                    text_save_to_simscript.append(QString("'Scale', '%1, %2, %3', ").arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_scale_x)).arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_scale_y)).arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_scale_z)));
+                if(shapes_param_list_ptr->at(i_sh)->transf_order[i_tr] == "Rotate")
+                    text_save_to_simscript.append(QString("'Rotate', '%1, %2, %3, %4', ").arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_rotate_ax)).arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_rotate_ay)).arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_rotate_az)).arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_rotate_angle)));
+                if(shapes_param_list_ptr->at(i_sh)->transf_order[i_tr] == "Move")
+                    text_save_to_simscript.append(QString("'Translate', '%1,%2,%3', ").arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_move_x)).arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_move_y)).arg(EvaluateVar(shapes_param_list_ptr->at(i_sh)->transf_move_z)));
+            }
+            text_save_to_simscript.chop(2); //cut the last space and comma
+            text_save_to_simscript.append(QString("}"));
+        }
+        text_save_to_simscript.append(QString(");\n"));
     }
 
     text_save_to_simscript.append("##<END_OUTPUT_AUTOGENERATED_PageGeometry>##\n");
@@ -1627,23 +1442,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         shape_tmp_ptr->z_coord_1 = sh_box_z_coord_1->text();
         shape_tmp_ptr->z_coord_2 = sh_box_z_coord_2->text();
         shape_tmp_ptr->material = sh_box_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_sphere->isChecked())
@@ -1657,23 +1455,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         shape_tmp_ptr->z_coord = sh_sphere_z_coord->text();
         shape_tmp_ptr->radius = sh_sphere_radius->text();
         shape_tmp_ptr->material = sh_sphere_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_sphericalshell->isChecked())
@@ -1688,23 +1469,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         shape_tmp_ptr->radius_outer = sh_sphericalshell_radius_outer->text();
         shape_tmp_ptr->radius_inner = sh_sphericalshell_radius_inner->text();
         shape_tmp_ptr->material = sh_sphericalshell_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_cylinder->isChecked())
@@ -1721,23 +1485,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         shape_tmp_ptr->z_coord_2 = sh_cylinder_z_coord_2->text();
         shape_tmp_ptr->radius = sh_cylinder_radius->text();
         shape_tmp_ptr->material = sh_cylinder_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_cylindricalshell->isChecked())
@@ -1755,23 +1502,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         shape_tmp_ptr->radius_outer = sh_cylindricalshell_radius_outer->text();
         shape_tmp_ptr->radius_inner = sh_cylindricalshell_radius_inner->text();
         shape_tmp_ptr->material = sh_cylindricalshell_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_curve->isChecked())
@@ -1790,23 +1520,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
             shape_tmp_ptr->points_z.push_back(sh_curve_pointslist->item(i_pcpy, 2)->text());
         }
         shape_tmp_ptr->material = sh_curve_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_wire->isChecked())
@@ -1826,23 +1539,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
             shape_tmp_ptr->points_z.push_back(sh_wire_pointslist->item(i_pcpy, 2)->text());
         }
         shape_tmp_ptr->material = sh_wire_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_polygon->isChecked())
@@ -1861,23 +1557,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
             shape_tmp_ptr->points_y.push_back(sh_polygon_pointslist->item(i_pcpy, 1)->text());
         }
         shape_tmp_ptr->material = sh_polygon_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_extrudedpolygon->isChecked())
@@ -1897,23 +1576,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
             shape_tmp_ptr->points_y.push_back(sh_extrudedpolygon_pointslist->item(i_pcpy, 1)->text());
         }
         shape_tmp_ptr->material = sh_extrudedpolygon_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_rotationalpolygon->isChecked())
@@ -1934,23 +1596,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
             shape_tmp_ptr->points_y.push_back(sh_rotationalpolygon_pointslist->item(i_pcpy, 1)->text());
         }
         shape_tmp_ptr->material = sh_rotationalpolygon_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_polyhedron->isChecked())
@@ -1975,23 +1620,6 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
             shape_tmp_ptr->faces_z.push_back(sh_polyhedron_faceslist->item(i_pcpy, 2)->text());
         }
         shape_tmp_ptr->material = sh_polyhedron_material->currentText();
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
     else if(rad_but_type_stlfile->isChecked())
@@ -2002,27 +1630,27 @@ void PageGeometry::OnAddOrChangeShape(void) //adding new shape to list and viewe
         shape_tmp_ptr->priority = sh_stlfile_priority->text();
         shape_tmp_ptr->path = sh_stlfile_path->text();
         shape_tmp_ptr->material = sh_stlfile_material->currentText();
-
-        shape_tmp_ptr->transf_scale_x = transf_scale_x->text();
-        shape_tmp_ptr->transf_scale_y = transf_scale_y->text();
-        shape_tmp_ptr->transf_scale_z = transf_scale_z->text();
-        shape_tmp_ptr->transf_rotate_ax = transf_rotate_ax->text();
-        shape_tmp_ptr->transf_rotate_ay = transf_rotate_ay->text();
-        shape_tmp_ptr->transf_rotate_az = transf_rotate_az->text();
-        shape_tmp_ptr->transf_rotate_angle = transf_rotate_angle->text();
-        shape_tmp_ptr->transf_move_x = transf_move_x->text();
-        shape_tmp_ptr->transf_move_y = transf_move_y->text();
-        shape_tmp_ptr->transf_move_z = transf_move_z->text();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(i_tr < transforms_list_widget->count())
-                shape_tmp_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
-            else
-                shape_tmp_ptr->transf_order[i_tr] = "";
-        }
         shape_ptr = shape_tmp_ptr;
     }
 
+    //shapes transforms - they can be set the same way to any type of shape (they are in patent class of all shapes)
+    shape_ptr->transf_scale_x = transf_scale_x->text();
+    shape_ptr->transf_scale_y = transf_scale_y->text();
+    shape_ptr->transf_scale_z = transf_scale_z->text();
+    shape_ptr->transf_rotate_ax = transf_rotate_ax->text();
+    shape_ptr->transf_rotate_ay = transf_rotate_ay->text();
+    shape_ptr->transf_rotate_az = transf_rotate_az->text();
+    shape_ptr->transf_rotate_angle = transf_rotate_angle->text();
+    shape_ptr->transf_move_x = transf_move_x->text();
+    shape_ptr->transf_move_y = transf_move_y->text();
+    shape_ptr->transf_move_z = transf_move_z->text();
+    for(int i_tr = 0; i_tr < 3; ++i_tr)
+    {
+        if(i_tr < transforms_list_widget->count())
+            shape_ptr->transf_order[i_tr] = transforms_list_widget->item(i_tr)->text();
+        else
+            shape_ptr->transf_order[i_tr] = "";
+    }
 
     // Add the configured above primitive to the lists in the wizard and in the QCSXCAD:
     if(!shape_ptr->name.isEmpty())
@@ -2078,32 +1706,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         sh_box_z_coord_1->setText(shape_box_tmp->z_coord_1);
         sh_box_z_coord_2->setText(shape_box_tmp->z_coord_2);
         sh_box_material->setCurrentIndex(sh_box_material->findText(shape_box_tmp->material));
-        stackedLayout->setCurrentIndex(0);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "sphere"))
     {
@@ -2116,32 +1718,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         sh_sphere_z_coord->setText(shape_sphere_tmp->z_coord);
         sh_sphere_radius->setText(shape_sphere_tmp->radius);
         sh_sphere_material->setCurrentIndex(sh_sphere_material->findText(shape_sphere_tmp->material));
-        stackedLayout->setCurrentIndex(0);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "sphericalshell"))
     {
@@ -2155,32 +1731,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         sh_sphericalshell_radius_outer->setText(shape_sphericalshell_tmp->radius_outer);
         sh_sphericalshell_radius_inner->setText(shape_sphericalshell_tmp->radius_inner);
         sh_sphericalshell_material->setCurrentIndex(sh_sphericalshell_material->findText(shape_sphericalshell_tmp->material));
-        stackedLayout->setCurrentIndex(0);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "cylinder"))
     {
@@ -2196,32 +1746,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         sh_cylinder_z_coord_2->setText(shape_cylinder_tmp->z_coord_2);
         sh_cylinder_radius->setText(shape_cylinder_tmp->radius);
         sh_cylinder_material->setCurrentIndex(sh_cylinder_material->findText(shape_cylinder_tmp->material));
-        stackedLayout->setCurrentIndex(0);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "cylindricalshell"))
     {
@@ -2238,32 +1762,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         sh_cylindricalshell_radius_outer->setText(shape_cylindricalshell_tmp->radius_outer);
         sh_cylindricalshell_radius_inner->setText(shape_cylindricalshell_tmp->radius_inner);
         sh_cylindricalshell_material->setCurrentIndex(sh_cylindricalshell_material->findText(shape_cylindricalshell_tmp->material));
-        stackedLayout->setCurrentIndex(0);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "curve"))
     {
@@ -2285,32 +1783,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
             sh_curve_pointslist->setItem(i_pcpy, 2, item_z);
         }
         sh_curve_material->setCurrentIndex(sh_curve_material->findText(shape_curve_tmp->material));
-        stackedLayout->setCurrentIndex(1);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "wire"))
     {
@@ -2333,32 +1805,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
             sh_wire_pointslist->setItem(i_pcpy, 2, item_z);
         }
         sh_wire_material->setCurrentIndex(sh_wire_material->findText(shape_wire_tmp->material));
-        stackedLayout->setCurrentIndex(1);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "polygon"))
     {
@@ -2379,32 +1825,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
             sh_polygon_pointslist->setItem(i_pcpy, 1, item_y);
         }
         sh_polygon_material->setCurrentIndex(sh_polygon_material->findText(shape_polygon_tmp->material));
-        stackedLayout->setCurrentIndex(1);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "extrudedpolygon"))
     {
@@ -2426,32 +1846,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
             sh_extrudedpolygon_pointslist->setItem(i_pcpy, 1, item_y);
         }
         sh_extrudedpolygon_material->setCurrentIndex(sh_extrudedpolygon_material->findText(shape_extrudedpolygon_tmp->material));
-        stackedLayout->setCurrentIndex(1);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "rotationalpolygon"))
     {
@@ -2474,32 +1868,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
             sh_rotationalpolygon_pointslist->setItem(i_pcpy, 1, item_y);
         }
         sh_rotationalpolygon_material->setCurrentIndex(sh_rotationalpolygon_material->findText(shape_rotationalpolygon_tmp->material));
-        stackedLayout->setCurrentIndex(1);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "polyhedron"))
     {
@@ -2531,32 +1899,6 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
             sh_polyhedron_faceslist->setItem(i_pcpy, 2, item_v_z);
         }
         sh_polyhedron_material->setCurrentIndex(sh_polyhedron_material->findText(shape_polyhedron_tmp->material));
-        stackedLayout->setCurrentIndex(1);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
     }
     else if(!QString::compare(shape_tmp_ptr->type, "stlfile"))
     {
@@ -2566,32 +1908,33 @@ void PageGeometry::OnGetSelectedShape(QListWidgetItem* item)
         sh_stlfile_priority->setText(shape_stlfile_tmp->priority);
         sh_stlfile_path->setText(shape_stlfile_tmp->path);
         sh_stlfile_material->setCurrentIndex(sh_stlfile_material->findText(shape_stlfile_tmp->material));
-        stackedLayout->setCurrentIndex(1);
-        transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
-        transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
-        transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
-        transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
-        transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
-        transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
-        transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
-        transf_move_x->setText(shape_tmp_ptr->transf_move_x);
-        transf_move_y->setText(shape_tmp_ptr->transf_move_y);
-        transf_move_z->setText(shape_tmp_ptr->transf_move_z);
-        transforms_list_widget->clear();
-        button_transform_move->show();
-        button_transform_scale->show();
-        button_transform_rotate->show();
-        for(int i_tr = 0; i_tr < 3; ++i_tr)
-        {
-            if(shape_tmp_ptr->transf_order[i_tr] != "")
-                transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
-            if(shape_tmp_ptr->transf_order[i_tr] == "Move")
-                button_transform_move->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
-                button_transform_scale->hide();
-            if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
-                button_transform_rotate->hide();
-        }
+    }
+
+    //transforms (the same way for any type of shape)
+    transf_scale_x->setText(shape_tmp_ptr->transf_scale_x);
+    transf_scale_y->setText(shape_tmp_ptr->transf_scale_y);
+    transf_scale_z->setText(shape_tmp_ptr->transf_scale_z);
+    transf_rotate_ax->setText(shape_tmp_ptr->transf_rotate_ax);
+    transf_rotate_ay->setText(shape_tmp_ptr->transf_rotate_ay);
+    transf_rotate_az->setText(shape_tmp_ptr->transf_rotate_az);
+    transf_rotate_angle->setText(shape_tmp_ptr->transf_rotate_angle);
+    transf_move_x->setText(shape_tmp_ptr->transf_move_x);
+    transf_move_y->setText(shape_tmp_ptr->transf_move_y);
+    transf_move_z->setText(shape_tmp_ptr->transf_move_z);
+    transforms_list_widget->clear();
+    button_transform_move->show();
+    button_transform_scale->show();
+    button_transform_rotate->show();
+    for(int i_tr = 0; i_tr < 3; ++i_tr)
+    {
+        if(shape_tmp_ptr->transf_order[i_tr] != "")
+            transforms_list_widget->addItem(shape_tmp_ptr->transf_order[i_tr]);
+        if(shape_tmp_ptr->transf_order[i_tr] == "Move")
+            button_transform_move->hide();
+        if(shape_tmp_ptr->transf_order[i_tr] == "Scale")
+            button_transform_scale->hide();
+        if(shape_tmp_ptr->transf_order[i_tr] == "Rotate")
+            button_transform_rotate->hide();
     }
 
     OnSetShapeTypeLayout();
