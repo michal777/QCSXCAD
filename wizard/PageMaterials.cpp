@@ -4,6 +4,7 @@
 PageMaterials::PageMaterials(QWizard *parent, QCSXCAD *wizardsparent, VariablesEditor *var_edit_main): QWizardPage(parent)
 {
     wizardsparent_tmp = wizardsparent;
+    parent_tmp = (WizardInit*)parent;
 
     QVector<property_parameters *> *materials_param_list = new QVector<property_parameters *>;
     properties_list_ptr = materials_param_list;
@@ -31,6 +32,7 @@ PageMaterials::PageMaterials(QWizard *parent, QCSXCAD *wizardsparent, VariablesE
 bool PageMaterials::validatePage()
 {
     SaveToSimScriptBuffer();
+    SaveSettings();
     return true;
 }
 
@@ -84,6 +86,68 @@ void PageMaterials::ReadFromSimScriptBuffer(void)
 
 }
 
+void PageMaterials::LoadSettings()
+{
+    for(int i_loadset = 0; "" != parent_tmp->wizard_settings->value(QString("PageMaterials_name%1").arg(i_loadset), "").toString(); ++i_loadset)
+    {
+        if("material" == parent_tmp->wizard_settings->value(QString("PageMaterials_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_material->setChecked(true);
+            material_name->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_name%1").arg(i_loadset), "").toString());
+            material_epsilon->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_epsilon%1").arg(i_loadset), "").toString());
+            material_mue->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_mue%1").arg(i_loadset), "").toString());
+            material_kappa->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_kappa%1").arg(i_loadset), "").toString());
+            material_sigma->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_sigma%1").arg(i_loadset), "").toString());
+        }
+        else if("metal" == parent_tmp->wizard_settings->value(QString("PageMaterials_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_metal->setChecked(true);
+            metal_name->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_name%1").arg(i_loadset), "").toString());
+            metal_conductivity->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_conductivity%1").arg(i_loadset), "").toString());
+            metal_thickness->setText(parent_tmp->wizard_settings->value(QString("PageMaterials_thickness%1").arg(i_loadset), "").toString());
+        }
+        OnAddOrChangeMaterial();
+    }
+}
+
+void PageMaterials::SaveSettings()
+{
+    //first clear old material names (for proper loading of settings later)
+    for(int i_clearset = 0; "" != parent_tmp->wizard_settings->value(QString("PageMaterials_name%1").arg(i_clearset), "").toString(); ++i_clearset)
+        parent_tmp->wizard_settings->remove(QString("PageMaterials_name%1").arg(i_clearset));
+
+    material_parameters *material_tmp_ptr;
+    metal_parameters *metal_tmp_ptr;
+
+    for(int i_saveset = 0; i_saveset < properties_list_ptr->count(); ++i_saveset)
+    {
+        if(!QString::compare(properties_list_ptr->at(i_saveset)->type, "material"))
+        {
+            material_tmp_ptr = (material_parameters *)(properties_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_type%1").arg(i_saveset), "material");
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_name%1").arg(i_saveset), material_tmp_ptr->name);
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_epsilon%1").arg(i_saveset), material_tmp_ptr->epsilon);
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_mue%1").arg(i_saveset), material_tmp_ptr->mue);
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_kappa%1").arg(i_saveset), material_tmp_ptr->kappa);
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_sigma%1").arg(i_saveset), material_tmp_ptr->sigma);
+        }
+        else if(!QString::compare(properties_list_ptr->at(i_saveset)->type, "metal"))
+        {
+            metal_tmp_ptr = (metal_parameters *)(properties_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_type%1").arg(i_saveset), "metal");
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_name%1").arg(i_saveset), metal_tmp_ptr->name);
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_conductivity%1").arg(i_saveset), metal_tmp_ptr->conductivity);
+            parent_tmp->wizard_settings->setValue(QString("PageMaterials_thickness%1").arg(i_saveset), metal_tmp_ptr->thickness);
+        }
+    }
+}
+
+
+void PageMaterials::initializePage()
+{
+    LoadSettings();
+}
+
 
 void PageMaterials::UploadMaterialsToViewer(void)
 {
@@ -97,7 +161,7 @@ void PageMaterials::UploadMaterialsToViewer(void)
     else if(rad_but_type_metal->isChecked())
     {
         CSPropMetal *new_metal = new CSPropMetal(wizardsparent_tmp->clParaSet);
-        new_metal->SetName(material_name->text().toStdString());
+        new_metal->SetName(metal_name->text().toStdString());
         wizardsparent_tmp->AddProperty(new_metal);
         wizardsparent_tmp->CSTree->AddPropItem(new_metal);
     }
@@ -214,7 +278,7 @@ void PageMaterials::MetalSettings(void)
 
 void PageMaterials::OnAddOrChangeMaterial(void)
 {
-    property_parameters *material_ptr;
+    property_parameters *property_ptr;
     if(rad_but_type_material->isChecked())
     {
         material_parameters *material_tmp_ptr = new material_parameters;
@@ -224,30 +288,30 @@ void PageMaterials::OnAddOrChangeMaterial(void)
         material_tmp_ptr->mue = material_mue->text();
         material_tmp_ptr->kappa = material_kappa->text();
         material_tmp_ptr->sigma = material_sigma->text();
-        material_ptr = material_tmp_ptr;
+        property_ptr = material_tmp_ptr;
     }
     else if(rad_but_type_metal->isChecked())
     {
-        metal_parameters *material_tmp_ptr = new metal_parameters;
-        material_tmp_ptr->name = metal_name->text();
-        material_tmp_ptr->type = "metal";
-        material_tmp_ptr->conductivity = metal_conductivity->text();
-        material_tmp_ptr->thickness = metal_thickness->text();
-        material_ptr = material_tmp_ptr;
+        metal_parameters *metal_tmp_ptr = new metal_parameters;
+        metal_tmp_ptr->name = metal_name->text();
+        metal_tmp_ptr->type = "metal";
+        metal_tmp_ptr->conductivity = metal_conductivity->text();
+        metal_tmp_ptr->thickness = metal_thickness->text();
+        property_ptr = metal_tmp_ptr;
     }
 
-    if(!material_ptr->name.isEmpty())
+    if(!property_ptr->name.isEmpty())
     {
-        if(properties_list_ptr->empty() || properties_list_ptr->at(properties_list_widget->currentRow())->name != material_ptr->name)
+        if(properties_list_ptr->empty() || properties_list_ptr->at(properties_list_widget->currentRow())->name != property_ptr->name)
         {
-            properties_list_ptr->push_back(material_ptr);
+            properties_list_ptr->push_back(property_ptr);
             properties_list_widget->addItem(properties_list_ptr->at(properties_list_ptr->size()-1)->name);
             properties_list_widget->setCurrentRow(properties_list_widget->count()-1);
             UploadMaterialsToViewer();
         }
-        else if(properties_list_ptr->at(properties_list_widget->currentRow())->name == material_ptr->name)
+        else if(properties_list_ptr->at(properties_list_widget->currentRow())->name == property_ptr->name)
         {
-            properties_list_ptr->replace(properties_list_widget->currentRow(), material_ptr);
+            properties_list_ptr->replace(properties_list_widget->currentRow(), property_ptr);
 //            UploadMaterialsToViewer();
         }
     }
@@ -268,26 +332,26 @@ void PageMaterials::OnRemoveMaterial(void)
 
 void PageMaterials::OnGetSelectedMaterial(QListWidgetItem* item)
 {
-    property_parameters *material_ptr;
-    material_ptr = properties_list_ptr->at(properties_list_widget->currentRow());
+    property_parameters *property_ptr;
+    property_ptr = properties_list_ptr->at(properties_list_widget->currentRow());
 
-    if(!QString::compare(material_ptr->type, "material"))
+    if(!QString::compare(property_ptr->type, "material"))
     {
-        material_parameters *material_ptr_tmp = (material_parameters *)(material_ptr);
+        material_parameters *material_tmp_ptr = (material_parameters *)(property_ptr);
         rad_but_type_material->setChecked(true);
-        material_name->setText(material_ptr_tmp->name);
-        material_epsilon->setText(material_ptr_tmp->epsilon);
-        material_mue->setText(material_ptr_tmp->mue);
-        material_kappa->setText(material_ptr_tmp->kappa);
-        material_sigma->setText(material_ptr_tmp->sigma);
+        material_name->setText(material_tmp_ptr->name);
+        material_epsilon->setText(material_tmp_ptr->epsilon);
+        material_mue->setText(material_tmp_ptr->mue);
+        material_kappa->setText(material_tmp_ptr->kappa);
+        material_sigma->setText(material_tmp_ptr->sigma);
     }
-    else if(!QString::compare(material_ptr->type, "metal"))
+    else if(!QString::compare(property_ptr->type, "metal"))
     {
-        metal_parameters *metal_ptr_tmp = (metal_parameters *)(material_ptr);
+        metal_parameters *metal_tmp_ptr = (metal_parameters *)(property_ptr);
         rad_but_type_metal->setChecked(true);
-        metal_name->setText(metal_ptr_tmp->name);
-        metal_conductivity->setText(metal_ptr_tmp->conductivity);
-        metal_thickness->setText(metal_ptr_tmp->thickness);
+        metal_name->setText(metal_tmp_ptr->name);
+        metal_conductivity->setText(metal_tmp_ptr->conductivity);
+        metal_thickness->setText(metal_tmp_ptr->thickness);
     }
     OnSetMaterialTypeLayout();
 }

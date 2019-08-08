@@ -19,6 +19,7 @@
 #include <QHBoxLayout>
 
 #include "VariablesEditor.h"
+#include "WizardInit.h"
 //??
 #include "../QCSXCAD.h"
 #include "../QCSPrimEditor.h"
@@ -65,6 +66,11 @@ public:
     bool validatePage();
     void SaveToSimScriptBuffer(void);
     void ReadFromSimScriptBuffer(void);
+    void SaveSettings(void);
+    void LoadSettings(void);
+    virtual void initializePage(void);
+
+    WizardInit *parent_tmp;
     QString text_save_to_simscript;
 
     //variables defined in variable editor can be used here, variables are processed using QScriptEngine

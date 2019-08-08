@@ -24,6 +24,7 @@
 #include <QScriptEngine>
 
 #include "VariablesEditor.h"
+#include "WizardInit.h"
 //??
 #include "../QCSXCAD.h"
 #include "../QCSPrimEditor.h"
@@ -212,7 +213,10 @@ public:
     bool validatePage();
     void SaveToSimScriptBuffer(void);
     void ReadFromSimScriptBuffer(void);
+    void SaveSettings(void);
+    void LoadSettings(void);
     QString text_save_to_simscript;
+    WizardInit *parent_tmp;    //parent object of the pages, needed here for file where settings are saved
 
     //variables defined in variable editor can be used here, variables are processed using QScriptEngine
     QCSXCAD *wizardsparent_tmp;

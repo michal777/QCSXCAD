@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QGridLayout>
 #include <QGroupBox>
+#include "WizardInit.h"
 //??
 #include "../QCSXCAD.h"
 
@@ -20,6 +21,11 @@ public:
     bool validatePage();
     void SaveToSimScriptBuffer(void);
     void ReadFromSimScriptBuffer(void);
+    void SaveSettings();
+    void LoadSettings();
+    virtual void initializePage(void);
+
+    WizardInit *parent_tmp;
     QString text_save_to_simscript;
 
     QGroupBox *group_box_sim_par;

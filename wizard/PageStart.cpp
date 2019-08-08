@@ -35,6 +35,8 @@ void PageStart::ConfigPaths()
 
 bool PageStart::validatePage()
 {
+    parent_tmp->wizard_settings = new QSettings(text_simulation_path->text() + "/wizard_setting.ini", QSettings::NativeFormat, this);
+    parent_tmp->var_edit_main->LoadSettings();
     SaveToSimScriptBuffer();
     SaveSettings();
     return true;

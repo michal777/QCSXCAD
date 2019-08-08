@@ -4,6 +4,7 @@
 
 PageGeneralGeometrySettings::PageGeneralGeometrySettings(QWizard *parent, QCSXCAD *wizardsparent): QWizardPage(parent)
 {
+    parent_tmp = (WizardInit*)parent;
     ConfigSimBox();
 }
 
@@ -11,6 +12,7 @@ PageGeneralGeometrySettings::PageGeneralGeometrySettings(QWizard *parent, QCSXCA
 bool PageGeneralGeometrySettings::validatePage()
 {
     SaveToSimScriptBuffer();
+    SaveSettings();
     return true;
 }
 
@@ -37,6 +39,46 @@ void PageGeneralGeometrySettings::SaveToSimScriptBuffer(void)
 void PageGeneralGeometrySettings::ReadFromSimScriptBuffer(void)
 {
 
+}
+
+void PageGeneralGeometrySettings::LoadSettings()
+{
+    combo_unit->setCurrentText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_combo_unit", "").toString());
+    text_bb_nx->setText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_text_bb_nx", "").toString());
+    combo_bb_nx->setCurrentText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_combo_bb_nx", "").toString());
+    text_bb_px->setText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_text_bb_px", "").toString());
+    combo_bb_px->setCurrentText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_combo_bb_px", "").toString());
+    text_bb_ny->setText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_text_bb_ny", "").toString());
+    combo_bb_ny->setCurrentText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_combo_bb_ny", "").toString());
+    text_bb_py->setText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_text_bb_py", "").toString());
+    combo_bb_py->setCurrentText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_combo_bb_py", "").toString());
+    text_bb_nz->setText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_text_bb_nz", "").toString());
+    combo_bb_nz->setCurrentText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_combo_bb_nz", "").toString());
+    text_bb_pz->setText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_text_bb_pz", "").toString());
+    combo_bb_pz->setCurrentText(parent_tmp->wizard_settings->value("PageGeneralGeometrySettings_combo_bb_pz", "").toString());
+}
+
+void PageGeneralGeometrySettings::SaveSettings()
+{
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_combo_unit", combo_unit->currentText());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_text_bb_nx", text_bb_nx->text());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_combo_bb_nx", combo_bb_nx->currentText());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_text_bb_px", text_bb_px->text());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_combo_bb_px", combo_bb_px->currentText());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_text_bb_ny", text_bb_ny->text());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_combo_bb_ny", combo_bb_ny->currentText());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_text_bb_py", text_bb_py->text());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_combo_bb_py", combo_bb_py->currentText());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_text_bb_nz", text_bb_nz->text());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_combo_bb_nz", combo_bb_nz->currentText());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_text_bb_pz", text_bb_pz->text());
+    parent_tmp->wizard_settings->setValue("PageGeneralGeometrySettings_combo_bb_pz", combo_bb_pz->currentText());
+}
+
+
+void PageGeneralGeometrySettings::initializePage()
+{
+    LoadSettings();
 }
 
 

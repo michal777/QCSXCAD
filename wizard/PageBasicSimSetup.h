@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <QGroupBox>
+#include "WizardInit.h"
 //??
 #include "../QCSXCAD.h"
 
@@ -21,17 +22,22 @@ public:
     QDialog *window_fdtd_setings;
     QString ReturnConfigFDTD(void);
     QString init_fdtd_line;
+    WizardInit *parent_tmp;
 
     bool validatePage();
     void SaveToSimScriptBuffer(void);
     void ReadFromSimScriptBuffer(void);
+    void SaveSettings();
+    void LoadSettings();
+    virtual void initializePage(void);
+
     QString text_save_to_simscript;
 
     QGroupBox *group_box_sim_par;
     QGridLayout *grid_sim_par;
 
-    QLineEdit *text_fmin;
-    QLineEdit *text_fmax;
+    QLineEdit *fmin;
+    QLineEdit *fmax;
     QComboBox *combo_frequnit;
 
     QLineEdit *init_ftdt_param_NrTS;

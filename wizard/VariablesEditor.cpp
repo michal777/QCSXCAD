@@ -1,8 +1,11 @@
 #include "VariablesEditor.h"
+#include "WizardInit.h"
 #include <QDebug>
 
 VariablesEditor::VariablesEditor(QWizard *parent): QDialog(parent)
 {
+    parent_tmp = parent;
+
     var_table = new QTableWidget(this);
     this->resize(QSize(300, 300));
     var_table->setRowCount(100);
@@ -24,10 +27,8 @@ VariablesEditor::VariablesEditor(QWizard *parent): QDialog(parent)
 
 void VariablesEditor::OnEvaluateVarTable()
 {
-    QString line_var;
-    QString line_value;
+    QString line_var, line_value;
     expr_eval = new QScriptEngine();
-   // QJSEngine myEngine;
     QScriptValue expr_value[tablesize];
 
     QString table_line;
@@ -58,5 +59,38 @@ void VariablesEditor::OnEvaluateVarTable()
         }
         timeout--;
     } while(all_valid == 0 && timeout);
-    VarEdit();
+    SaveSettings();
+}
+
+
+
+void VariablesEditor::LoadSettings()
+{
+    for(int i_loadset = 0; "" != ((WizardInit*)parent_tmp)->wizard_settings->value(QString("Variables_var%1").arg(i_loadset), "").toString(); ++i_loadset)
+    {
+        QTableWidgetItem *line_var_tmp = new QTableWidgetItem(0);
+        line_var_tmp->setText(((WizardInit*)parent_tmp)->wizard_settings->value(QString("Variables_var%1").arg(i_loadset), "").toString());
+        var_table->setItem(i_loadset, 0, line_var_tmp);
+    }
+    for(int i_loadset = 0; "" != ((WizardInit*)parent_tmp)->wizard_settings->value(QString("Variables_value%1").arg(i_loadset), "").toString(); ++i_loadset)
+    {
+        QTableWidgetItem *line_value_tmp = new QTableWidgetItem(0);
+        line_value_tmp->setText(((WizardInit*)parent_tmp)->wizard_settings->value(QString("Variables_value%1").arg(i_loadset), "").toString());
+        var_table->setItem(i_loadset, 1, line_value_tmp);
+    }
+}
+
+void VariablesEditor::SaveSettings()
+{
+    QTableWidgetItem *line_var_tmp, *line_value_tmp;
+    for(int i_saveset = 0; i_saveset < tablesize; ++i_saveset)
+    {
+        line_var_tmp = var_table->item(i_saveset, 0);
+        line_value_tmp = var_table->item(i_saveset, 1);
+        if((line_var_tmp != NULL) && (line_value_tmp != NULL))
+        {
+            ((WizardInit*)parent_tmp)->wizard_settings->setValue(QString("Variables_var%1").arg(i_saveset), line_var_tmp->text());
+            ((WizardInit*)parent_tmp)->wizard_settings->setValue(QString("Variables_value%1").arg(i_saveset), line_value_tmp->text());
+        }
+    }
 }

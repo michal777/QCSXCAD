@@ -3,6 +3,7 @@
 PageGeometry::PageGeometry(QWizard *parent, QCSXCAD *wizardsparent, VariablesEditor *var_edit_main): QWizardPage(parent)
 {
     wizardsparent_tmp = wizardsparent;
+    parent_tmp = (WizardInit*)parent;
 
     QVector<shape_parameters *> *shapes_param_list = new QVector<shape_parameters *>;
     shapes_param_list_ptr = shapes_param_list;
@@ -52,6 +53,7 @@ PageGeometry::PageGeometry(QWizard *parent, QCSXCAD *wizardsparent, VariablesEdi
 bool PageGeometry::validatePage()
 {
     SaveToSimScriptBuffer();
+    SaveSettings();
     return true;
 }
 
@@ -187,6 +189,388 @@ void PageGeometry::SaveToSimScriptBuffer(void)
 void PageGeometry::ReadFromSimScriptBuffer(void)
 {
 
+}
+
+void PageGeometry::LoadSettings()
+{
+    for(int i_loadset = 0; "" != parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString(); ++i_loadset)
+    {
+        if("box" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_box->setChecked(true);
+            sh_box_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_box_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_box_x_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_1_%1").arg(i_loadset), "").toString());
+            sh_box_x_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_2_%1").arg(i_loadset), "").toString());
+            sh_box_y_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_1_%1").arg(i_loadset), "").toString());
+            sh_box_y_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_2_%1").arg(i_loadset), "").toString());
+            sh_box_z_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_1_%1").arg(i_loadset), "").toString());
+            sh_box_z_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_2_%1").arg(i_loadset), "").toString());
+        }
+        else if("sphere" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_sphere->setChecked(true);
+            sh_sphere_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_sphere_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_sphere_x_coord->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord%1").arg(i_loadset), "").toString());
+            sh_sphere_y_coord->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord%1").arg(i_loadset), "").toString());
+            sh_sphere_z_coord->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord%1").arg(i_loadset), "").toString());
+            sh_sphere_radius->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_radius%1").arg(i_loadset), "").toString());
+        }
+        else if("sphericalshell" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_sphericalshell->setChecked(true);
+            sh_sphericalshell_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_sphericalshell_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_sphericalshell_x_coord->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord%1").arg(i_loadset), "").toString());
+            sh_sphericalshell_y_coord->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord%1").arg(i_loadset), "").toString());
+            sh_sphericalshell_z_coord->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord%1").arg(i_loadset), "").toString());
+            sh_sphericalshell_radius_inner->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_radius_inner%1").arg(i_loadset), "").toString());
+            sh_sphericalshell_radius_outer->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_radius_outer%1").arg(i_loadset), "").toString());
+        }
+        else if("cylinder" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_cylinder->setChecked(true);
+            sh_cylinder_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_cylinder_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_cylinder_x_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_1_%1").arg(i_loadset), "").toString());
+            sh_cylinder_x_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_2_%1").arg(i_loadset), "").toString());
+            sh_cylinder_y_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_1_%1").arg(i_loadset), "").toString());
+            sh_cylinder_y_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_2_%1").arg(i_loadset), "").toString());
+            sh_cylinder_z_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_1_%1").arg(i_loadset), "").toString());
+            sh_cylinder_z_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_2_%1").arg(i_loadset), "").toString());
+            sh_cylinder_radius->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_radius%1").arg(i_loadset), "").toString());
+
+        }
+        else if("cylindricalshell" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_cylindricalshell->setChecked(true);
+            sh_cylindricalshell_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_x_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_1_%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_x_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_2_%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_y_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_1_%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_y_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_2_%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_z_coord_1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_1_%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_z_coord_2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_2_%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_radius_inner->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_radius_inner%1").arg(i_loadset), "").toString());
+            sh_cylindricalshell_radius_outer->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_radius_outer%1").arg(i_loadset), "").toString());
+        }
+        else if("curve" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_curve->setChecked(true);
+            sh_curve_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_curve_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            for(int i_pcpy = 0; "" != parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString(); ++i_pcpy)
+            {
+                sh_curve_pointslist->setItem(i_pcpy, 0, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_curve_pointslist->setItem(i_pcpy, 1, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_curve_pointslist->setItem(i_pcpy, 2, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+            }
+        }
+        else if("wire" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_wire->setChecked(true);
+            sh_wire_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_wire_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_wire_radius->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_radius%1").arg(i_loadset), "").toString());
+            for(int i_pcpy = 0; "" != parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString(); ++i_pcpy)
+            {
+                sh_wire_pointslist->setItem(i_pcpy, 0, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_wire_pointslist->setItem(i_pcpy, 1, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_wire_pointslist->setItem(i_pcpy, 2, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_z_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+            }
+        }
+        else if("polygon" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_polygon->setChecked(true);
+            sh_polygon_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_polygon_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_polygon_norm_dir->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_normal_dir%1").arg(i_loadset), "").toString());
+            sh_polygon_elevation->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_elevation%1").arg(i_loadset), "").toString());
+            for(int i_pcpy = 0; "" != parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString(); ++i_pcpy)
+            {
+                sh_polygon_pointslist->setItem(i_pcpy, 0, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_polygon_pointslist->setItem(i_pcpy, 1, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+            }
+        }
+        else if("extrudedpolygon" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_extrudedpolygon->setChecked(true);
+            sh_extrudedpolygon_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_extrudedpolygon_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_extrudedpolygon_norm_dir->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_normal_dir%1").arg(i_loadset), "").toString());
+            sh_extrudedpolygon_elevation->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_elevation%1").arg(i_loadset), "").toString());
+            sh_extrudedpolygon_length->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_length%1").arg(i_loadset), "").toString());
+            for(int i_pcpy = 0; "" != parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString(); ++i_pcpy)
+            {
+                sh_extrudedpolygon_pointslist->setItem(i_pcpy, 0, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_extrudedpolygon_pointslist->setItem(i_pcpy, 1, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+            }
+        }
+        else if("rotationalpolygon" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_rotationalpolygon->setChecked(true);
+            sh_rotationalpolygon_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_rotationalpolygon_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_rotationalpolygon_norm_dir->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_normal_dir%1").arg(i_loadset), "").toString());
+            sh_rotationalpolygon_rot_axis->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_rot_axis_dir%1").arg(i_loadset), "").toString());
+            sh_rotationalpolygon_angle1->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_angle1_%1").arg(i_loadset), "").toString());
+            sh_rotationalpolygon_angle2->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_angle2_%1").arg(i_loadset), "").toString());
+            for(int i_pcpy = 0; "" != parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString(); ++i_pcpy)
+            {
+                sh_rotationalpolygon_pointslist->setItem(i_pcpy, 0, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_rotationalpolygon_pointslist->setItem(i_pcpy, 1, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+            }
+        }
+        else if("polyhedron" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_polyhedron->setChecked(true);
+            sh_polyhedron_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_polyhedron_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            for(int i_pcpy = 0; "" != parent_tmp->wizard_settings->value(QString("PageGeometry_vertices_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString(); ++i_pcpy)
+            {
+                sh_polyhedron_verticeslist->setItem(i_pcpy, 0, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_vertices_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_polyhedron_verticeslist->setItem(i_pcpy, 1, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_vertices_y_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_polyhedron_verticeslist->setItem(i_pcpy, 2, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_vertices_z_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_polyhedron_faceslist->setItem(i_pcpy, 0, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_faces_x_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_polyhedron_faceslist->setItem(i_pcpy, 1, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_faces_y_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+                sh_polyhedron_faceslist->setItem(i_pcpy, 2, new QTableWidgetItem(parent_tmp->wizard_settings->value(QString("PageGeometry_faces_z_coord_%1_%2").arg(i_pcpy).arg(i_loadset), "").toString()));
+            }
+        }
+        else if("stlfile" == parent_tmp->wizard_settings->value(QString("PageGeometry_type%1").arg(i_loadset), "").toString())
+        {
+            rad_but_type_stlfile->setChecked(true);
+            sh_stlfile_name->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_name%1").arg(i_loadset), "").toString());
+            sh_stlfile_priority->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_priority%1").arg(i_loadset), "").toString());
+            sh_stlfile_path->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_path%1").arg(i_loadset), "").toString());
+
+        }
+
+        transforms_list_widget->clear();
+        transf_scale_x->clear();
+        transf_scale_y->clear();
+        transf_scale_z->clear();
+        transf_rotate_ax->clear();
+        transf_rotate_ay->clear();
+        transf_rotate_az->clear();
+        transf_rotate_angle->clear();
+        transf_move_x->clear();
+        transf_move_y->clear();
+        transf_move_z->clear();
+        transf_scale_x->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_scale_x_%1").arg(i_loadset), "").toString());
+        transf_scale_y->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_scale_y_%1").arg(i_loadset), "").toString());
+        transf_scale_z->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_scale_z_%1").arg(i_loadset), "").toString());
+        transf_rotate_ax->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_rotate_ax_%1").arg(i_loadset), "").toString());
+        transf_rotate_ay->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_rotate_ay_%1").arg(i_loadset), "").toString());
+        transf_rotate_az->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_rotate_az_%1").arg(i_loadset), "").toString());
+        transf_rotate_angle->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_rotate_angle%1").arg(i_loadset), "").toString());
+        transf_move_x->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_move_x_%1").arg(i_loadset), "").toString());
+        transf_move_y->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_move_y_%1").arg(i_loadset), "").toString());
+        transf_move_z->setText(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_move_z_%1").arg(i_loadset), "").toString());
+        transforms_list_widget->addItem(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_order0_%1").arg(i_loadset), "").toString());
+        transforms_list_widget->addItem(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_order1_%1").arg(i_loadset), "").toString());
+        transforms_list_widget->addItem(parent_tmp->wizard_settings->value(QString("PageGeometry_transf_order2_%1").arg(i_loadset), "").toString());
+
+        OnAddOrChangeShape();
+    }
+}
+
+void PageGeometry::SaveSettings()
+{
+    shape_parameters *shape_tmp;
+    shape_box_parameters *shape_box_tmp;
+    shape_sphere_parameters *shape_sphere_tmp;
+    shape_sphericalshell_parameters *shape_sphericalshell_tmp;
+    shape_cylinder_parameters *shape_cylinder_tmp;
+    shape_cylindricalshell_parameters *shape_cylindricalshell_tmp;
+    shape_curve_parameters *shape_curve_tmp;
+    shape_wire_parameters *shape_wire_tmp;
+    shape_polygon_parameters *shape_polygon_tmp;
+    shape_extrudedpolygon_parameters *shape_extrudedpolygon_tmp;
+    shape_rotationalpolygon_parameters *shape_rotationalpolygon_tmp;
+    shape_polyhedron_parameters *shape_polyhedron_tmp;
+    shape_stlfile_parameters *shape_stlfile_tmp;
+
+    for(int i_saveset = 0; i_saveset < shapes_param_list_ptr->count(); ++i_saveset)
+    {
+        if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "box"))
+        {
+            shape_box_tmp = (shape_box_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "box");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_box_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_box_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_1_%1").arg(i_saveset), shape_box_tmp->x_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_2_%1").arg(i_saveset), shape_box_tmp->x_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_1_%1").arg(i_saveset), shape_box_tmp->y_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_2_%1").arg(i_saveset), shape_box_tmp->y_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_1_%1").arg(i_saveset), shape_box_tmp->z_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_2_%1").arg(i_saveset), shape_box_tmp->z_coord_2);
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "sphere"))
+        {
+            shape_sphere_tmp = (shape_sphere_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "sphere");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_sphere_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_sphere_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord%1").arg(i_saveset), shape_sphere_tmp->x_coord);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord%1").arg(i_saveset), shape_sphere_tmp->y_coord);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord%1").arg(i_saveset), shape_sphere_tmp->z_coord);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_radius%1").arg(i_saveset), shape_sphere_tmp->radius);
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "sphericalshell"))
+        {
+            shape_sphericalshell_tmp = (shape_sphericalshell_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "sphericalshell");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_sphericalshell_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_sphericalshell_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord%1").arg(i_saveset), shape_sphericalshell_tmp->x_coord);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord%1").arg(i_saveset), shape_sphericalshell_tmp->y_coord);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord%1").arg(i_saveset), shape_sphericalshell_tmp->z_coord);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_radius_inner%1").arg(i_saveset), shape_sphericalshell_tmp->radius_inner);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_radius_outer%1").arg(i_saveset), shape_sphericalshell_tmp->radius_outer);
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "cylinder"))
+        {
+            shape_cylinder_tmp = (shape_cylinder_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "cylinder");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_cylinder_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_cylinder_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_1_%1").arg(i_saveset), shape_cylinder_tmp->x_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_2_%1").arg(i_saveset), shape_cylinder_tmp->x_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_1_%1").arg(i_saveset), shape_cylinder_tmp->y_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_2_%1").arg(i_saveset), shape_cylinder_tmp->y_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_1_%1").arg(i_saveset), shape_cylinder_tmp->z_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_2_%1").arg(i_saveset), shape_cylinder_tmp->z_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_radius%1").arg(i_saveset), shape_cylinder_tmp->radius);
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "cylindricalshell"))
+        {
+            shape_cylindricalshell_tmp = (shape_cylindricalshell_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "cylindricalshell");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_cylindricalshell_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_cylindricalshell_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_1_%1").arg(i_saveset), shape_cylindricalshell_tmp->x_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_2_%1").arg(i_saveset), shape_cylindricalshell_tmp->x_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_1_%1").arg(i_saveset), shape_cylindricalshell_tmp->y_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_2_%1").arg(i_saveset), shape_cylindricalshell_tmp->y_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_1_%1").arg(i_saveset), shape_cylindricalshell_tmp->z_coord_1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_2_%1").arg(i_saveset), shape_cylindricalshell_tmp->z_coord_2);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_radius_inner%1").arg(i_saveset), shape_cylindricalshell_tmp->radius_inner);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_radius_outer%1").arg(i_saveset), shape_cylindricalshell_tmp->radius_outer);
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "curve"))
+        {
+            shape_curve_tmp = (shape_curve_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "curve");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_curve_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_curve_tmp->priority);
+            for(int i_pcpy = 0; i_pcpy < shape_curve_tmp->points_x.size() && i_pcpy < shape_curve_tmp->points_y.size() && i_pcpy < shape_curve_tmp->points_z.size(); ++i_pcpy)
+            {
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_curve_tmp->points_x.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_curve_tmp->points_y.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_curve_tmp->points_z.at(i_pcpy));
+            }
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "wire"))
+        {
+            shape_wire_tmp = (shape_wire_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "wire");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_wire_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_wire_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_radius%1").arg(i_saveset), shape_wire_tmp->radius);
+            for(int i_pcpy = 0; i_pcpy < shape_wire_tmp->points_x.size() && i_pcpy < shape_wire_tmp->points_y.size() && i_pcpy < shape_wire_tmp->points_z.size(); ++i_pcpy)
+            {
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_wire_tmp->points_x.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_wire_tmp->points_y.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_z_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_wire_tmp->points_z.at(i_pcpy));
+            }
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "polygon"))
+        {
+            shape_polygon_tmp = (shape_polygon_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "polygon");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_polygon_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_polygon_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_normal_dir%1").arg(i_saveset), shape_polygon_tmp->normal_dir);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_elevation%1").arg(i_saveset), shape_polygon_tmp->elevation);
+            for(int i_pcpy = 0; i_pcpy < shape_polygon_tmp->points_x.size() && i_pcpy < shape_polygon_tmp->points_y.size(); ++i_pcpy)
+            {
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polygon_tmp->points_x.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polygon_tmp->points_y.at(i_pcpy));
+            }
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "extrudedpolygon"))
+        {
+            shape_extrudedpolygon_tmp = (shape_extrudedpolygon_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "extrudedpolygon");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_extrudedpolygon_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_extrudedpolygon_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_normal_dir%1").arg(i_saveset), shape_extrudedpolygon_tmp->normal_dir);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_elevation%1").arg(i_saveset), shape_extrudedpolygon_tmp->elevation);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_length%1").arg(i_saveset), shape_extrudedpolygon_tmp->length);
+            for(int i_pcpy = 0; i_pcpy < shape_extrudedpolygon_tmp->points_x.size() && i_pcpy < shape_extrudedpolygon_tmp->points_y.size(); ++i_pcpy)
+            {
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_extrudedpolygon_tmp->points_x.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_extrudedpolygon_tmp->points_y.at(i_pcpy));
+            }
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "rotationalpolygon"))
+        {
+            shape_rotationalpolygon_tmp = (shape_rotationalpolygon_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "rotationalpolygon");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_rotationalpolygon_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_rotationalpolygon_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_normal_dir%1").arg(i_saveset), shape_rotationalpolygon_tmp->normal_dir);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_rot_axis_dir%1").arg(i_saveset), shape_rotationalpolygon_tmp->rot_axis_dir);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_angle1_%1").arg(i_saveset), shape_rotationalpolygon_tmp->angle1);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_angle2_%1").arg(i_saveset), shape_rotationalpolygon_tmp->angle2);
+            for(int i_pcpy = 0; i_pcpy < shape_rotationalpolygon_tmp->points_x.size() && i_pcpy < shape_rotationalpolygon_tmp->points_y.size(); ++i_pcpy)
+            {
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_x_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_rotationalpolygon_tmp->points_x.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_y_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_rotationalpolygon_tmp->points_y.at(i_pcpy));
+            }
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "polyhedron"))
+        {
+            shape_polyhedron_tmp = (shape_polyhedron_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "polyhedron");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_polyhedron_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_polyhedron_tmp->priority);
+            for(int i_pcpy = 0; i_pcpy < shape_polyhedron_tmp->vertices_x.size() && i_pcpy < shape_polyhedron_tmp->vertices_y.size() && i_pcpy < shape_polyhedron_tmp->vertices_z.size(); ++i_pcpy)
+            {
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_vertices_x_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polyhedron_tmp->vertices_x.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_vertices_y_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polyhedron_tmp->vertices_y.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_vertices_z_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polyhedron_tmp->vertices_z.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_faces_x_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polyhedron_tmp->faces_x.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_faces_y_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polyhedron_tmp->faces_y.at(i_pcpy));
+                parent_tmp->wizard_settings->setValue(QString("PageGeometry_faces_z_coord_%1_%2").arg(i_pcpy).arg(i_saveset), shape_polyhedron_tmp->faces_z.at(i_pcpy));
+            }
+        }
+        else if(!QString::compare(shapes_param_list_ptr->at(i_saveset)->type, "stlfile"))
+        {
+            shape_stlfile_tmp = (shape_stlfile_parameters *)(shapes_param_list_ptr->at(i_saveset));
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_type%1").arg(i_saveset), "stlfile");
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_name%1").arg(i_saveset), shape_stlfile_tmp->name);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_priority%1").arg(i_saveset), shape_stlfile_tmp->priority);
+            parent_tmp->wizard_settings->setValue(QString("PageGeometry_path%1").arg(i_saveset), shape_stlfile_tmp->path);
+        }
+
+        shape_tmp = (shape_parameters *)(shapes_param_list_ptr->at(i_saveset));
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_scale_x_%1").arg(i_saveset), shape_tmp->transf_scale_x);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_scale_y_%1").arg(i_saveset), shape_tmp->transf_scale_y);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_scale_z_%1").arg(i_saveset), shape_tmp->transf_scale_z);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_rotate_ax_%1").arg(i_saveset), shape_tmp->transf_rotate_ax);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_rotate_ay_%1").arg(i_saveset), shape_tmp->transf_rotate_ay);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_rotate_az_%1").arg(i_saveset), shape_tmp->transf_rotate_az);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_rotate_angle%1").arg(i_saveset), shape_tmp->transf_rotate_angle);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_move_x_%1").arg(i_saveset), shape_tmp->transf_move_x);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_move_y_%1").arg(i_saveset), shape_tmp->transf_move_y);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_move_z_%1").arg(i_saveset), shape_tmp->transf_move_z);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_order0_%1").arg(i_saveset), shape_tmp->transf_order[0]);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_order1_%1").arg(i_saveset), shape_tmp->transf_order[1]);
+        parent_tmp->wizard_settings->setValue(QString("PageGeometry_transf_order2_%1").arg(i_saveset), shape_tmp->transf_order[2]);
+    }
 }
 
 
@@ -2064,6 +2448,8 @@ void PageGeometry::initializePage() //load all materials, to be accessible to se
         sh_polyhedron_material->addItem(str);
         sh_stlfile_material->addItem(str);
     }
+
+    LoadSettings();
 }
 
 

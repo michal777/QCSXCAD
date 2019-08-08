@@ -25,14 +25,17 @@ public:
     QScriptEngine *expr_eval;
     QScriptValue expr_value[tablesize];
 
+    QWizard *parent_tmp;    //parent object, needed here for file where settings are saved
+
     QTableWidget *GetVarTable(void) {return var_table;}
     QScriptEngine *GetExprEngine(void) {return expr_eval;}
     QString GetEvaluatedVar(QString var_to_eval) {return expr_eval->evaluate(var_to_eval).toString();}
 
+    void SaveSettings(void);
+    void LoadSettings(void);
+
 public slots:
     void OnEvaluateVarTable();
-signals:
-    void VarEdit(void);
 };
 
 #endif // VARIABLESEDITOR_H
